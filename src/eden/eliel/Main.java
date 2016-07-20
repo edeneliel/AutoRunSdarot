@@ -1,4 +1,4 @@
-package com.company;
+package eden.eliel;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
