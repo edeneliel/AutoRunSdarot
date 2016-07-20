@@ -30,7 +30,7 @@ public class Main {
 
     public static void main(String[] args) throws InterruptedException {
         Boolean flag,needRefresh;
-        System.setProperty("webdriver.chrome.driver", "C:\\Users\\Eden\\IdeaProjects\\untitled\\chromedriver.exe");
+        System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
         WebDriver webDriver = new ChromeDriver();
         JavascriptExecutor js = (JavascriptExecutor) webDriver;
         webDriver.manage().window().maximize();
