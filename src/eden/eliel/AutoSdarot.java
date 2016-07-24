@@ -31,7 +31,7 @@ public class AutoSdarot {
 
     public void execute(String seriesName) throws InterruptedException {
         setSeries(seriesName);
-        Boolean needRefresh;
+        Boolean needRefresh,videoError;
         int maxSeason, maxEpisode;
 
         if (_seriesUrl == null) {
@@ -58,13 +58,19 @@ public class AutoSdarot {
                     _js.executeScript("scroll(0,250)");
                     _webDriver.findElement(By.id("proceed")).click();
 
-                    System.out.println(_js.executeScript("return jwplayer().getState()"));
-                    if (_js.executeScript("return jwplayer().getState()").equals("error"))
-                        _webDriver.navigate().refresh();
-                    else
-                        needRefresh = false;
+                    videoError = false;
+                    while (!videoError && !_js.executeScript("return jwplayer().getState()").equals("playing")) {
+                        if (_js.executeScript("return jwplayer().getState()").equals("error")) {
+                            videoError = true;
+                            _webDriver.navigate().refresh();
+                        }
+                        else {
+                            playVideo();
+                        }
+                        needRefresh = videoError;
+                        Thread.sleep(1000);
+                    }
                 }
-                playVideo();
 
                 while (!_js.executeScript("return jwplayer().getState()").equals("complete"))
                     Thread.sleep(2000);

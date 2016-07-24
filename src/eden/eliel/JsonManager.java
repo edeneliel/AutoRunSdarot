@@ -41,10 +41,23 @@ public class JsonManager {
     }
 
     private Map<String, String> getSeriesMap(String series){
+        series = series.toLowerCase();
+        String tempSeriesName;
         for (Map<String, String> ser : _series){
-            if (ser.get("Name").toLowerCase().equals(series.toLowerCase()))
+            tempSeriesName = ser.get("Name").toLowerCase();
+            if (tempSeriesName.equals(series.toLowerCase()))
+                return ser;
+            if (firstLetters(tempSeriesName).equals(series))
                 return ser;
         }
         return null;
+    }
+
+    private String firstLetters(String str){
+        String result="";
+        for (String t: str.split(" ")){
+            result+=t.substring(0,1);
+        }
+        return result;
     }
 }
