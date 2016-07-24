@@ -65,7 +65,8 @@ public class AutoSdarot {
                             _webDriver.navigate().refresh();
                         }
                         else {
-                            playVideo();
+                            if (!_js.executeScript("return jwplayer().getState()").equals("buffering"))
+                                playVideo();
                         }
                         needRefresh = videoError;
                         Thread.sleep(1000);
