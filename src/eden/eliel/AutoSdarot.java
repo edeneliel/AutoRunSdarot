@@ -1,5 +1,6 @@
 package eden.eliel;
 
+import com.google.gson.JsonObject;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -21,9 +22,6 @@ public class AutoSdarot {
 
     public AutoSdarot(){
         _jm = new JsonManager("config.json");
-        _seriesUrl = (String) _jm.getByKey("Url");
-        _currentSeason = Integer.parseInt(coalesce((String) _jm.getByKey("Season"),"1"));
-        _currentEpisode = Integer.parseInt(coalesce((String) _jm.getByKey("Episode"),"1"));
 
         System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
         _webDriver = new ChromeDriver();
@@ -31,14 +29,19 @@ public class AutoSdarot {
         _webDriver.manage().window().maximize();
     }
 
-    public void execute() throws InterruptedException {
+    public void execute(String seriesName) throws InterruptedException {
+        setSeries(seriesName);
         Boolean needRefresh;
         int maxSeason, maxEpisode;
 
+        if (_seriesUrl == null) {
+            _webDriver.close();
+            return;
+        }
         maxSeason = getSeasonsLength();
 
         for (; _currentSeason <= maxSeason; _currentSeason++) {
-            updateJson(_currentSeason,_currentEpisode);
+            updateJson(seriesName,_currentSeason,_currentEpisode);
             maxEpisode = getEpisodesLength();
             for (; _currentEpisode <= maxEpisode; _currentEpisode++) {
                 _webDriver.get(_seriesUrl + "/season/" + _currentSeason + "/episode/" + _currentEpisode);
@@ -55,6 +58,7 @@ public class AutoSdarot {
                     _js.executeScript("scroll(0,250)");
                     _webDriver.findElement(By.id("proceed")).click();
 
+                    System.out.println(_js.executeScript("return jwplayer().getState()"));
                     if (_js.executeScript("return jwplayer().getState()").equals("error"))
                         _webDriver.navigate().refresh();
                     else
@@ -64,7 +68,7 @@ public class AutoSdarot {
 
                 while (!_js.executeScript("return jwplayer().getState()").equals("complete"))
                     Thread.sleep(2000);
-                updateJson(_currentSeason,_currentEpisode+1);
+                updateJson(seriesName,_currentSeason,_currentEpisode+1);
             }
             _currentEpisode = 1;
         }
@@ -98,8 +102,13 @@ public class AutoSdarot {
         _webDriver.get(_seriesUrl + "/season/" + _currentSeason);
         return Integer.parseInt(_webDriver.findElement(By.xpath("(//body//*[@id='episode'])/*[last()]")).getAttribute("data-episode"));
     }
-    private void updateJson(int season, int episode){
-        _jm.setByID("Episode", episode+"");
-        _jm.setByID("Season", season+"");
+    private void updateJson(String seriesName,int season, int episode){
+        _jm.setKeyBySeries(seriesName,"Episode", episode+"");
+        _jm.setKeyBySeries(seriesName,"Season", season+"");
+    }
+    public void setSeries(String seriesName){
+        _seriesUrl = _jm.getKeyBySeries(seriesName,"Url");
+        _currentSeason = Integer.parseInt(coalesce(_jm.getKeyBySeries(seriesName,"Season"),"1"));
+        _currentEpisode = Integer.parseInt(coalesce(_jm.getKeyBySeries(seriesName,"Episode"),"1"));
     }
 }
