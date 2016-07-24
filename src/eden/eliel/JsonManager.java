@@ -3,33 +3,48 @@ package eden.eliel;
 import com.google.gson.Gson;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 public class JsonManager {
     Gson _gson;
-    Map<String,String> _map;
+    ArrayList<Map<String,String>> _series;
     String _file;
 
     public JsonManager(String file) {
         _gson = new Gson();
         _file = file;
         try {
-            _map = _gson.fromJson(new FileReader(_file),Map.class);
+            _series = (ArrayList<Map<String, String>>) _gson.fromJson(new FileReader(_file),Map.class).get("Series");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
     }
 
-    public Object getByKey(String key){
-        return _map.get(key);
+    public String getKeyBySeries(String series,String key){
+        Map<String, String> seriesMap = getSeriesMap(series);
+        if (seriesMap == null)
+            return null;
+        return seriesMap.get(key);
     }
 
-    public void setByID(String key,String value){
-        _map.put(key,value);
+    public void setKeyBySeries(String series,String key,String value){
+        getSeriesMap(series).put(key,value);
         try (Writer writer = new FileWriter(_file)) {
-            _gson.toJson(_map, writer);
+            HashMap<String,ArrayList> map = new HashMap();
+            map.put("Series",_series);
+            _gson.toJson(map, writer);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private Map<String, String> getSeriesMap(String series){
+        for (Map<String, String> ser : _series){
+            if (ser.get("Name").toLowerCase().equals(series.toLowerCase()))
+                return ser;
+        }
+        return null;
     }
 }
