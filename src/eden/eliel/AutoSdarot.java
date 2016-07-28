@@ -21,9 +21,9 @@ public class AutoSdarot {
     int _currentEpisode;
 
     public AutoSdarot(){
-        _jm = new JsonManager("config.json");
+        _jm = new JsonManager("resources/config.json");
 
-        System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
+        System.setProperty("webdriver.chrome.driver", "resources/chromedriver.exe");
         _webDriver = new ChromeDriver();
         _js = (JavascriptExecutor) _webDriver;
         _webDriver.manage().window().maximize();
@@ -87,11 +87,11 @@ public class AutoSdarot {
     }
     private void removeAds(){
         String firstDivId = _webDriver.findElement(By.xpath("(//body/div)[1]")).getAttribute("id");
-        if (!firstDivId.equals("fb-root")){
+        if (!firstDivId.equals("fb-root") && !firstDivId.equals("")){
             _js.executeScript("document.getElementById('" + firstDivId + "').remove()");
         }
 
-        ArrayList<WebElement> app_ads = new ArrayList<WebElement>(_webDriver.findElements(By.xpath("//body/*[@type='application/x-shockwave-flash']")));
+        ArrayList<WebElement> app_ads = new ArrayList<>(_webDriver.findElements(By.xpath("//body/*[@type='application/x-shockwave-flash']")));
         for (WebElement app_ad:app_ads){
             _js.executeScript("document.getElementById('" + app_ad.getAttribute("id") + "').remove()");
         }
