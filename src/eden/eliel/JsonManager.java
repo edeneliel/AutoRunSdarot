@@ -28,7 +28,6 @@ public class JsonManager {
             return null;
         return seriesMap.get(key);
     }
-
     public void setKeyBySeries(String series,String key,String value){
         getSeriesMap(series).put(key,value);
         try (Writer writer = new FileWriter(_file)) {
@@ -38,6 +37,12 @@ public class JsonManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    public ArrayList<String> getSeriesNames(){
+        ArrayList<String> result = new ArrayList<>();
+        for (Map<String,String> series:_series)
+            result.add(series.get("Name"));
+        return result;
     }
 
     private Map<String, String> getSeriesMap(String series){
@@ -52,7 +57,6 @@ public class JsonManager {
         }
         return null;
     }
-
     private String firstLetters(String str){
         String result="";
         for (String t: str.split(" ")){

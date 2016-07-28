@@ -81,6 +81,18 @@ public class AutoSdarot {
         }
         _webDriver.close();
     }
+    public void setSeries(String seriesName){
+        _seriesUrl = _jm.getKeyBySeries(seriesName,"Url");
+        _currentSeason = Integer.parseInt(coalesce(_jm.getKeyBySeries(seriesName,"Season"),"1"));
+        _currentEpisode = Integer.parseInt(coalesce(_jm.getKeyBySeries(seriesName,"Episode"),"1"));
+    }
+    public String[] getAllSeries(){
+        String [] result = new String[0];
+        return _jm.getSeriesNames().toArray(result);
+    }
+    public String getKeyBySeries(String series,String key){
+        return _jm.getKeyBySeries(series,key);
+    }
 
     private <T> T coalesce(T a, T b){
         return a == null? b: a;
@@ -112,10 +124,5 @@ public class AutoSdarot {
     private void updateJson(String seriesName,int season, int episode){
         _jm.setKeyBySeries(seriesName,"Episode", episode+"");
         _jm.setKeyBySeries(seriesName,"Season", season+"");
-    }
-    public void setSeries(String seriesName){
-        _seriesUrl = _jm.getKeyBySeries(seriesName,"Url");
-        _currentSeason = Integer.parseInt(coalesce(_jm.getKeyBySeries(seriesName,"Season"),"1"));
-        _currentEpisode = Integer.parseInt(coalesce(_jm.getKeyBySeries(seriesName,"Episode"),"1"));
     }
 }
