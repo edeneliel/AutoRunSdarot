@@ -44,6 +44,7 @@ public class Application extends JFrame {
         _comboBox.addActionListener(e -> {
             _seasonTag.setText("Season: " + _autoSdarot.getKeyBySeries(_comboBox.getSelectedItem().toString(), "Season"));
             _episodeTag.setText("Episode: " + _autoSdarot.getKeyBySeries(_comboBox.getSelectedItem().toString(), "Episode"));
+            pack();
         });
         AutoCompleteDecorator.decorate(_comboBox);
     }

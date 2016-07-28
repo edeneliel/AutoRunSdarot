@@ -24,12 +24,13 @@ public class AutoSdarot {
         _jm = new JsonManager("resources/config.json");
 
         System.setProperty("webdriver.chrome.driver", "resources/chromedriver.exe");
-        _webDriver = new ChromeDriver();
-        _js = (JavascriptExecutor) _webDriver;
-        _webDriver.manage().window().maximize();
     }
 
     public void execute(String seriesName) throws InterruptedException {
+        _webDriver = new ChromeDriver();
+        _js = (JavascriptExecutor) _webDriver;
+        _webDriver.manage().window().maximize();
+
         setSeries(seriesName);
         Boolean needRefresh,videoError;
         int maxSeason, maxEpisode;
