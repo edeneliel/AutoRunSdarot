@@ -21,9 +21,9 @@ public class AutoSdarot {
     int _currentEpisode;
 
     public AutoSdarot(){
-        _jm = new JsonManager("resources/config.json");
+        _jm = new JsonManager("config.json");
 
-        System.setProperty("webdriver.chrome.driver", "resources/chromedriver.exe");
+        System.setProperty("webdriver.chrome.driver", "C://chromedriver.exe");
     }
 
     public void execute(String seriesName) throws InterruptedException {
