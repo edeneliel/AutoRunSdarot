@@ -9,10 +9,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class JsonManager {
-    Gson _gson;
-    ArrayList<Map<String,String>> _series;
-    String _file;
-    String _fileDir;
+    private Gson _gson;
+    private ArrayList<Map<String,String>> _series;
+    private String _file;
+    private String _fileDir;
 
     public JsonManager(String file) {
         _gson = new Gson();
@@ -50,10 +50,15 @@ public class JsonManager {
         return seriesMap.get(key);
     }
     public void setKeyBySeries(String series,String key,String value){
-        getSeriesMap(series).put(key,value);
+        Map<String, String> resultSeries = getSeriesMap(series);
+        if (resultSeries != null)
+            resultSeries.put(key,value);
+        else {
+            Map<String, String> newSeries = setNewSeries(series,key,value);
+            _series.add(newSeries);
+        }
         try {
             OutputStream out = new FileOutputStream(_fileDir+_file);
-            System.out.println(out);
             Writer writer = new OutputStreamWriter(out , "UTF-8");
             HashMap<String,ArrayList> map = new HashMap();
             map.put("Series",_series);
@@ -80,16 +85,15 @@ public class JsonManager {
             tempSeriesName = ser.get("Name").toLowerCase();
             if (tempSeriesName.equals(series.toLowerCase()))
                 return ser;
-            if (firstLetters(tempSeriesName).equals(series))
-                return ser;
         }
         return null;
     }
-    private String firstLetters(String str){
-        String result="";
-        for (String t: str.split(" ")){
-            result+=t.substring(0,1);
-        }
-        return result;
+    private Map<String, String> setNewSeries(String series,String key,String value){
+        Map<String, String> newSeries = new HashMap <>();
+        newSeries.put("Name",series);
+        newSeries.put(key,value);
+        newSeries.put("Season","1");
+        newSeries.put("Episode","1");
+        return newSeries;
     }
 }
