@@ -17,14 +17,13 @@ public class Application extends JFrame {
 
     public Application(){
         setLayout(new BoxLayout(getContentPane(),BoxLayout.LINE_AXIS));
+        getRootPane().setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 
         _autoSdarot = new AutoSdarot();
 
         setTitle("AutoSdarot");
         setVisible(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        getRootPane().setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 
         setDetailsPanel();
         setButtonsPanel();
