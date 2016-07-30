@@ -12,10 +12,12 @@ import java.util.ArrayList;
  * Created by Eden on 7/22/2016.
  */
 public class AutoSdarot {
+    private final String DEFAULT_WATCH_URL="http://www.sdarot.pm/watch/";
+
     private WebDriver _webDriver;
     private JavascriptExecutor _js;
     private JsonManager _jm;
-    private String _seriesUrl;
+    private String _seriesId;
     private int _currentSeason;
     private int _currentEpisode;
 
@@ -34,7 +36,7 @@ public class AutoSdarot {
         Boolean needRefresh,videoError;
         int maxSeason, maxEpisode;
 
-        if (_seriesUrl == null) {
+        if (_seriesId == null) {
             _webDriver.close();
             return;
         }
@@ -44,7 +46,7 @@ public class AutoSdarot {
             updateJson(seriesName,_currentSeason,_currentEpisode);
             maxEpisode = getEpisodesLength();
             for (; _currentEpisode <= maxEpisode; _currentEpisode++) {
-                _webDriver.get(_seriesUrl + "/season/" + _currentSeason + "/episode/" + _currentEpisode);
+                _webDriver.get(DEFAULT_WATCH_URL+_seriesId+ "/season/" + _currentSeason + "/episode/" + _currentEpisode);
                 needRefresh = true;
 
                 while (needRefresh) {
@@ -82,9 +84,9 @@ public class AutoSdarot {
         _webDriver.close();
     }
     public void setSeries(String seriesName){
-        _seriesUrl = _jm.getKeyBySeries(seriesName,"Url");
-        _currentSeason = Integer.parseInt(coalesce(_jm.getKeyBySeries(seriesName,"Season"),"1"));
-        _currentEpisode = Integer.parseInt(coalesce(_jm.getKeyBySeries(seriesName,"Episode"),"1"));
+        _seriesId = _jm.getKeyBySeries(seriesName,"Id");
+        _currentSeason = Integer.parseInt(_jm.getKeyBySeries(seriesName,"Season"));
+        _currentEpisode = Integer.parseInt(_jm.getKeyBySeries(seriesName,"Episode"));
     }
     public String[] getAllSeries(){
         String [] result = new String[0];
@@ -92,6 +94,9 @@ public class AutoSdarot {
     }
     public String getKeyBySeries(String series,String key){
         return _jm.getKeyBySeries(series,key);
+    }
+    public void addSeries(String seriesName, String id) {
+        _jm.setKeyBySeries(seriesName,"Id",id);
     }
 
     private <T> T coalesce(T a, T b){
@@ -114,11 +119,11 @@ public class AutoSdarot {
         _js.executeScript("document.getElementById('details').setAttribute('style', 'display: none')");
     }
     private int getSeasonsLength(){
-        _webDriver.get(_seriesUrl);
+        _webDriver.get(DEFAULT_WATCH_URL+_seriesId);
         return Integer.parseInt(_webDriver.findElement(By.xpath("(//body//*[@id='season'])/*[last()]")).getAttribute("data-season"));
     }
     private int getEpisodesLength(){
-        _webDriver.get(_seriesUrl + "/season/" + _currentSeason);
+        _webDriver.get(DEFAULT_WATCH_URL+_seriesId + "/season/" + _currentSeason);
         return Integer.parseInt(_webDriver.findElement(By.xpath("(//body//*[@id='episode'])/*[last()]")).getAttribute("data-episode"));
     }
     private void updateJson(String seriesName,int season, int episode){

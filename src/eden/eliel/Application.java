@@ -36,6 +36,10 @@ public class Application extends JFrame {
         pack();
     }
 
+    public void addSeries(SearchSeriesBox seriesBox){
+        _autoSdarot.addSeries(seriesBox.getEngName(),seriesBox.getId());
+    }
+
     private void setComboBox(){
         _comboBox = new JComboBox(_autoSdarot.getAllSeries());
         _comboBox.addActionListener(e -> {
@@ -58,7 +62,7 @@ public class Application extends JFrame {
     private void setAddBtn(){
         _addBtn = new JButton("Add Series");
         _addBtn.addActionListener(e -> {
-            AddSeriesFrame addSeriesFrame = new AddSeriesFrame();
+            AddSeriesFrame addSeriesFrame = new AddSeriesFrame(this);
             addSeriesFrame.setVisible(true);
         });
     }

@@ -2,22 +2,26 @@ package eden.eliel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 /**
  * Created by Eden on 7/30/2016.
  */
 public class AddSeriesFrame extends JFrame {
+    private Application _application;
     private SearchUrlSdarot _searchSdarot;
     private ArrayList<SearchSeriesBox> _resultSeries;
     private JPanel _searchPanel,_searchResult;
     private JTextField _inputField;
     private JButton _submitBtn;
 
-    public AddSeriesFrame(){
+    public AddSeriesFrame(Application app){
+        _application = app;
+
         setLayout(new BoxLayout(getContentPane(),BoxLayout.PAGE_AXIS));
         getRootPane().setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
-        setMaximumSize(new Dimension(400, 200));
 
         _searchSdarot = new SearchUrlSdarot();
         _resultSeries = new ArrayList<>();
@@ -40,6 +44,9 @@ public class AddSeriesFrame extends JFrame {
         _submitBtn.addActionListener(e -> {
             addResultToArray();
             pack();
+            if (getHeight()>350)
+                setSize(getWidth(),350);
+
         });
 
         getRootPane().setDefaultButton(_submitBtn);
@@ -59,7 +66,9 @@ public class AddSeriesFrame extends JFrame {
         if (!_inputField.getText().equals("") && _inputField.getText().length() >= 3) {
             _resultSeries = _searchSdarot.SearchSeries(_inputField.getText());
             for (SearchSeriesBox seriesBox : _resultSeries) {
-                _searchResult.add(new JLabel(seriesBox.getEngName()));
+                JButton btn = new JButton(seriesBox.getEngName());
+                btn.addActionListener(e -> _application.addSeries(seriesBox));
+                _searchResult.add(btn);
             }
         }
     }

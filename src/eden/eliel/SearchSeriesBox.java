@@ -4,12 +4,12 @@ package eden.eliel;
  * Created by Eden on 7/30/2016.
  */
 public class SearchSeriesBox {
-    private String _hebName,_engName,_url;
+    private String _hebName,_engName,_id;
 
-    public SearchSeriesBox(String hebName,String engName,String url){
+    public SearchSeriesBox(String hebName,String engName,String id){
         _hebName = hebName;
         _engName = engName;
-        _url = url;
+        _id = id;
     }
 
     public String getHebName(){
@@ -18,7 +18,7 @@ public class SearchSeriesBox {
     public String getEngName(){
         return _engName;
     }
-    public String getUrl(){
-        return _url;
+    public String getId(){
+        return _id;
     }
 }
