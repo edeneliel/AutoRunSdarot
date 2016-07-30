@@ -14,7 +14,7 @@ public class SearchUrlSdarot {
     private final String DEFAULT_WATCH_URL = "https://www.sdarot.pm/search";
     private final String USER_AGENT = "Mozilla/5.0";
     private final String ID_FROM_URL = ".*\\/watch\\/(.*?)-.*";
-    private final String SERIES_INFO_PATTERN = "<div class=\"title\"><h1>(.*) \\/ (.*)לצפייה ישירה<\\/h1><\\/div>";
+    private final String SERIES_INFO_PATTERN = "<div class=\"title\"><h1>(.*) \\/ (.*) .*? .*?<\\/h1><\\/div>";
     private final String FIRST_INFO_PATTERN = "<a href=\"\\/watch\\/(.*?)-.*\">(.*)<\\/a>";
     private final String SECOND_INFO_PATTERN = "<h4>(.*)<\\/h4>";
 
