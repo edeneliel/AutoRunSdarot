@@ -32,6 +32,7 @@ public class AddSeriesFrame extends JFrame {
             pack();
         });
 
+        getRootPane().setDefaultButton(_submitBtn);
         add(_inputField);
         add(_submitBtn);
         add(_allSeriesLabel);
