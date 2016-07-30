@@ -1,6 +1,5 @@
 package eden.eliel;
 
-import com.google.gson.JsonObject;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -13,12 +12,12 @@ import java.util.ArrayList;
  * Created by Eden on 7/22/2016.
  */
 public class AutoSdarot {
-    WebDriver _webDriver;
-    JavascriptExecutor _js;
-    JsonManager _jm;
-    String _seriesUrl;
-    int _currentSeason;
-    int _currentEpisode;
+    private WebDriver _webDriver;
+    private JavascriptExecutor _js;
+    private JsonManager _jm;
+    private String _seriesUrl;
+    private int _currentSeason;
+    private int _currentEpisode;
 
     public AutoSdarot(){
         _jm = new JsonManager("config.json");

@@ -9,11 +9,11 @@ import java.awt.*;
  * Created by Eden on 7/27/2016.
  */
 public class Application extends JFrame {
-    AutoSdarot _autoSdarot;
-    JPanel _details, _buttons;
-    JLabel _seasonTag,_episodeTag;
-    JButton _watchBtn;
-    JComboBox _comboBox;
+    private AutoSdarot _autoSdarot;
+    private JPanel _details, _buttons;
+    private JLabel _seasonTag,_episodeTag;
+    private JButton _watchBtn,_addBtn;
+    private JComboBox _comboBox;
 
     public Application(){
         setLayout(new BoxLayout(getContentPane(),BoxLayout.LINE_AXIS));
@@ -22,7 +22,6 @@ public class Application extends JFrame {
 
         setTitle("AutoSdarot");
         setVisible(true);
-        setSize(250, 100);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         getRootPane().setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
@@ -57,6 +56,13 @@ public class Application extends JFrame {
             }
         });
     }
+    private void setAddBtn(){
+        _addBtn = new JButton("Add Series");
+        _addBtn.addActionListener(e -> {
+            AddSeriesFrame addSeriesFrame = new AddSeriesFrame();
+            addSeriesFrame.setVisible(true);
+        });
+    }
     private void setDetailsPanel(){
         _details = new JPanel();
         _details.setLayout(new BoxLayout(_details,BoxLayout.PAGE_AXIS));
@@ -76,11 +82,16 @@ public class Application extends JFrame {
     private void setButtonsPanel() {
         _buttons = new JPanel();
         _buttons.setLayout(new BoxLayout(_buttons,BoxLayout.PAGE_AXIS));
+        _buttons.setAlignmentX(RIGHT_ALIGNMENT);
 
         _buttons.setBorder(BorderFactory.createEmptyBorder(0,10,0,0));
 
+        setAddBtn();
         setWatchBtn();
 
+        _watchBtn.setAlignmentX(Component.RIGHT_ALIGNMENT);
         _buttons.add(_watchBtn);
+        _addBtn.setAlignmentX(Component.RIGHT_ALIGNMENT);
+        _buttons.add(_addBtn);
     }
 }

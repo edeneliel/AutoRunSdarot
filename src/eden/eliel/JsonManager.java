@@ -9,10 +9,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class JsonManager {
-    Gson _gson;
-    ArrayList<Map<String,String>> _series;
-    String _file;
-    String _fileDir;
+    private Gson _gson;
+    private ArrayList<Map<String,String>> _series;
+    private String _file;
+    private String _fileDir;
 
     public JsonManager(String file) {
         _gson = new Gson();
@@ -25,6 +25,8 @@ public class JsonManager {
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
+
+        _fileDir = "";
 
         InputStream in = null;
         try {
