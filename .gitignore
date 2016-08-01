@@ -3,4 +3,3 @@ out/
 *.iml
 *.jar
 config.json
-src/eden/eliel/Main.java
