@@ -4,6 +4,8 @@ import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  * Created by Eden on 7/27/2016.
@@ -12,7 +14,7 @@ public class Application extends JFrame {
     private AutoSdarot _autoSdarot;
     private JPanel _details, _buttons;
     private JLabel _seasonTag,_episodeTag;
-    private JButton _watchBtn,_addBtn;
+    private JButton _watchBtn,_addBtn,_removeBtn;
     private JComboBox _comboBox;
 
     public Application(){
@@ -78,7 +80,7 @@ public class Application extends JFrame {
         // ComBox has a promblem with alignment.
         _comboBox.setAlignmentX(Component.LEFT_ALIGNMENT);
         _details.add(_comboBox);
-        _details.add(Box.createRigidArea(new Dimension(0,15)));
+        _details.add(Box.createRigidArea(new Dimension(0,46)));
         _details.add(_seasonTag);
         _details.add(_episodeTag);
     }
@@ -91,10 +93,24 @@ public class Application extends JFrame {
 
         setAddBtn();
         setWatchBtn();
+        _removeBtn = new JButton("Remove Series");
+        _removeBtn.addActionListener(e -> {
+            int selectedOption = JOptionPane.showConfirmDialog(null,
+                    "Are you sure you want to remove \"" + _comboBox.getSelectedItem().toString() + "\"?",
+                    "Conformation",
+                    JOptionPane.YES_NO_OPTION);
+            if (selectedOption == JOptionPane.YES_OPTION) {
+                _autoSdarot.removeSeries(_comboBox.getSelectedItem().toString());
+            }
+        });
 
         _watchBtn.setAlignmentX(Component.RIGHT_ALIGNMENT);
         _buttons.add(_watchBtn);
+        _buttons.add(Box.createRigidArea(new Dimension(0,10)));
         _addBtn.setAlignmentX(Component.RIGHT_ALIGNMENT);
         _buttons.add(_addBtn);
+        _buttons.add(Box.createRigidArea(new Dimension(0,10)));
+        _removeBtn.setAlignmentX(Component.RIGHT_ALIGNMENT);
+        _buttons.add(_removeBtn);
     }
 }

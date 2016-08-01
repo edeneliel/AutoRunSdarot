@@ -26,6 +26,8 @@ public class JsonManager {
             e.printStackTrace();
         }
 
+        _fileDir = "";
+
         InputStream in = null;
         try {
             in = new FileInputStream(_fileDir+_file);
@@ -57,19 +59,16 @@ public class JsonManager {
             Map<String, String> newSeries = setNewSeries(series,key,value);
             _series.add(newSeries);
         }
-        try {
-            OutputStream out = new FileOutputStream(_fileDir+_file);
-            Writer writer = new OutputStreamWriter(out , "UTF-8");
-            HashMap<String,ArrayList> map = new HashMap();
-            map.put("Series",_series);
-            _gson.toJson(map, writer);
-            writer.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        updateJson();
+    }
+    public boolean removeSeries(String series){
+        Map<String,String> seriesMap = getSeriesMap(series);
+        if (seriesMap != null) {
+            _series.remove(seriesMap);
+            updateJson();
+            return true;
         }
-
+        return false;
     }
     public ArrayList<String> getSeriesNames(){
         ArrayList<String> result = new ArrayList<>();
@@ -95,5 +94,18 @@ public class JsonManager {
         newSeries.put("Season","1");
         newSeries.put("Episode","1");
         return newSeries;
+    }
+    private void updateJson(){
+        try {
+            OutputStream out = new FileOutputStream(_fileDir+_file);
+            Writer writer = new OutputStreamWriter(out , "UTF-8");
+            HashMap<String,ArrayList> map = new HashMap();
+            map.put("Series",_series);
+            _gson.toJson(map, writer);
+            writer.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
