@@ -26,6 +26,8 @@ public class JsonManager {
             e.printStackTrace();
         }
 
+        _fileDir = "";
+
         InputStream in = null;
         try {
             in = new FileInputStream(_fileDir+_file);
