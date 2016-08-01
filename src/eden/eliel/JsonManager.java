@@ -26,7 +26,10 @@ public class JsonManager {
             e.printStackTrace();
         }
 
-        _fileDir = "";
+        File f = new File(_fileDir+_file);
+        if(!f.exists()) {
+            _fileDir="";
+        }
 
         InputStream in = null;
         try {
