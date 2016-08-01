@@ -41,6 +41,13 @@ public class Application extends JFrame {
     public void addSeries(SearchSeriesBox seriesBox){
         _autoSdarot.addSeries(seriesBox.getEngName(),seriesBox.getId());
     }
+    public void updateSeries(){
+        _comboBox.setModel(new DefaultComboBoxModel(_autoSdarot.getAllSeries()));
+        _comboBox.setSelectedIndex(0);
+        _seasonTag.setText("Season: " + _autoSdarot.getKeyBySeries(_comboBox.getSelectedItem().toString(), "Season"));
+        _episodeTag.setText("Episode: " + _autoSdarot.getKeyBySeries(_comboBox.getSelectedItem().toString(), "Episode"));
+        pack();
+    }
 
     private void setComboBox(){
         _comboBox = new JComboBox(_autoSdarot.getAllSeries());
