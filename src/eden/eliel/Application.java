@@ -75,6 +75,19 @@ public class Application extends JFrame {
             addSeriesFrame.setVisible(true);
         });
     }
+    private void setRemoveBtn(){
+        _removeBtn = new JButton("Remove Series");
+        _removeBtn.addActionListener(e -> {
+            int selectedOption = JOptionPane.showConfirmDialog(null,
+                    "Are you sure you want to remove \"" + _comboBox.getSelectedItem().toString() + "\"?",
+                    "Conformation",
+                    JOptionPane.YES_NO_OPTION);
+            if (selectedOption == JOptionPane.YES_OPTION) {
+                _autoSdarot.removeSeries(_comboBox.getSelectedItem().toString());
+                updateSeries();
+            }
+        });
+    }
     private void setDetailsPanel(){
         _details = new JPanel();
         _details.setLayout(new BoxLayout(_details,BoxLayout.PAGE_AXIS));
@@ -98,18 +111,9 @@ public class Application extends JFrame {
 
         _buttons.setBorder(BorderFactory.createEmptyBorder(0,10,0,0));
 
-        setAddBtn();
         setWatchBtn();
-        _removeBtn = new JButton("Remove Series");
-        _removeBtn.addActionListener(e -> {
-            int selectedOption = JOptionPane.showConfirmDialog(null,
-                    "Are you sure you want to remove \"" + _comboBox.getSelectedItem().toString() + "\"?",
-                    "Conformation",
-                    JOptionPane.YES_NO_OPTION);
-            if (selectedOption == JOptionPane.YES_OPTION) {
-                _autoSdarot.removeSeries(_comboBox.getSelectedItem().toString());
-            }
-        });
+        setAddBtn();
+        setRemoveBtn();
 
         _watchBtn.setAlignmentX(Component.RIGHT_ALIGNMENT);
         _buttons.add(_watchBtn);

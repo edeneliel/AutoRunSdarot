@@ -75,7 +75,10 @@ public class AddSeriesFrame extends JFrame {
             _resultSeries = _searchSdarot.SearchSeries(_inputField.getText());
             for (SearchSeriesBox seriesBox : _resultSeries) {
                 JButton btn = new JButton(seriesBox.getEngName());
-                btn.addActionListener(e -> _application.addSeries(seriesBox));
+                btn.addActionListener(e -> {
+                    _application.addSeries(seriesBox);
+                    JOptionPane.showMessageDialog(this, "Series has been added");
+                });
                 _searchResult.add(btn);
             }
         }
