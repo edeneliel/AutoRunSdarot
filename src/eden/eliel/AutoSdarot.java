@@ -98,6 +98,9 @@ public class AutoSdarot {
     public void addSeries(String seriesName, String id) {
         _jm.setKeyBySeries(seriesName,"Id",id);
     }
+    public boolean removeSeries(String series) {
+        return _jm.removeSeries(series);
+    }
 
     private <T> T coalesce(T a, T b){
         return a == null? b: a;
