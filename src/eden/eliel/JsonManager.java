@@ -3,21 +3,47 @@ package eden.eliel;
 import com.google.gson.Gson;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public class JsonManager {
-    Gson _gson;
-    ArrayList<Map<String,String>> _series;
-    String _file;
+    private Gson _gson;
+    private ArrayList<Map<String,String>> _series;
+    private String _file;
+    private String _fileDir;
 
     public JsonManager(String file) {
         _gson = new Gson();
         _file = file;
+        _fileDir = "";
+
         try {
-            _series = (ArrayList<Map<String, String>>) _gson.fromJson(new FileReader(_file),Map.class).get("Series");
+            _fileDir = getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+            _fileDir = _fileDir.substring(0, _fileDir.lastIndexOf('/')+1);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+
+        File f = new File(_fileDir+_file);
+        if(!f.exists()) {
+            _fileDir="";
+        }
+
+        InputStream in = null;
+        try {
+            in = new FileInputStream(_fileDir+_file);
         } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        BufferedReader buff = new BufferedReader(new InputStreamReader(in));
+        _series = (ArrayList<Map<String, String>>) _gson.fromJson(buff,Map.class).get("Series");
+        try {
+            in.close();
+            buff.close();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -28,16 +54,30 @@ public class JsonManager {
             return null;
         return seriesMap.get(key);
     }
-
     public void setKeyBySeries(String series,String key,String value){
-        getSeriesMap(series).put(key,value);
-        try (Writer writer = new FileWriter(_file)) {
-            HashMap<String,ArrayList> map = new HashMap();
-            map.put("Series",_series);
-            _gson.toJson(map, writer);
-        } catch (IOException e) {
-            e.printStackTrace();
+        Map<String, String> resultSeries = getSeriesMap(series);
+        if (resultSeries != null)
+            resultSeries.put(key,value);
+        else {
+            Map<String, String> newSeries = setNewSeries(series,key,value);
+            _series.add(newSeries);
         }
+        updateJson();
+    }
+    public boolean removeSeries(String series){
+        Map<String,String> seriesMap = getSeriesMap(series);
+        if (seriesMap != null) {
+            _series.remove(seriesMap);
+            updateJson();
+            return true;
+        }
+        return false;
+    }
+    public ArrayList<String> getSeriesNames(){
+        ArrayList<String> result = new ArrayList<>();
+        for (Map<String,String> series:_series)
+            result.add(series.get("Name"));
+        return result;
     }
 
     private Map<String, String> getSeriesMap(String series){
@@ -47,17 +87,28 @@ public class JsonManager {
             tempSeriesName = ser.get("Name").toLowerCase();
             if (tempSeriesName.equals(series.toLowerCase()))
                 return ser;
-            if (firstLetters(tempSeriesName).equals(series))
-                return ser;
         }
         return null;
     }
-
-    private String firstLetters(String str){
-        String result="";
-        for (String t: str.split(" ")){
-            result+=t.substring(0,1);
+    private Map<String, String> setNewSeries(String series,String key,String value){
+        Map<String, String> newSeries = new HashMap <>();
+        newSeries.put("Name",series);
+        newSeries.put(key,value);
+        newSeries.put("Season","1");
+        newSeries.put("Episode","1");
+        return newSeries;
+    }
+    private void updateJson(){
+        try {
+            OutputStream out = new FileOutputStream(_fileDir+_file);
+            Writer writer = new OutputStreamWriter(out , "UTF-8");
+            HashMap<String,ArrayList> map = new HashMap();
+            map.put("Series",_series);
+            _gson.toJson(map, writer);
+            writer.close();
         }
-        return result;
+        catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
