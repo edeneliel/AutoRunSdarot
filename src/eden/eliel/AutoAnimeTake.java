@@ -17,8 +17,8 @@ public class AutoAnimeTake {
     private String _seriesId;
     private int _currentEpisode;
 
-    public AutoAnimeTake(){
-        _jm = new JsonManager("config.json");
+    public AutoAnimeTake(JsonManager jsonManager){
+        _jm = jsonManager;
 
         System.setProperty("webdriver.chrome.driver", "C://chromedriver.exe");
 
@@ -43,7 +43,7 @@ public class AutoAnimeTake {
             _webDriver.get(DEFAULT_WATCH_URL + "/watch/" + _seriesId + "-episode-" + _currentEpisode);
             _js.executeScript("player.play()");
 
-            while (!_js.executeScript("return player.paused()").toString().equals("true"))
+            while (!_js.executeScript("return player.ended()").toString().equals("true"))
                 Thread.sleep(2000);
             //updateJson(seriesName,_currentEpisode+1);
         }

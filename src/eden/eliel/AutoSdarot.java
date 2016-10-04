@@ -21,8 +21,8 @@ public class AutoSdarot {
     private int _currentSeason;
     private int _currentEpisode;
 
-    public AutoSdarot(){
-        _jm = new JsonManager("config.json");
+    public AutoSdarot(JsonManager jsonManager){
+        _jm = jsonManager;
 
         System.setProperty("webdriver.chrome.driver", "C://chromedriver.exe");
     }
