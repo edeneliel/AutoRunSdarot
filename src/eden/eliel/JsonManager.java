@@ -79,13 +79,6 @@ public class JsonManager {
             result.add(series.get("Name"));
         return result;
     }
-    public String getPlatformOfSeries(String series){
-        for (Map<String,String> seriesDetails:_series){
-            if (seriesDetails.get("Name").equals(series))
-                return seriesDetails.get("Platform");
-        }
-        return "";
-    }
 
     private Map<String, String> getSeriesMap(String series){
         series = series.toLowerCase();

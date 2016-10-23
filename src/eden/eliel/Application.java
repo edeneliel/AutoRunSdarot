@@ -11,9 +11,7 @@ import java.awt.event.ActionListener;
  * Created by Eden on 7/27/2016.
  */
 public class Application extends JFrame {
-    private JsonManager _jm;
     private AutoSdarot _autoSdarot;
-    private AutoAnimeTake _autoAnimeTake;
     private JPanel _details, _buttons;
     private JLabel _seasonTag,_episodeTag;
     private JButton _watchBtn,_addBtn,_removeBtn;
@@ -23,9 +21,7 @@ public class Application extends JFrame {
         setLayout(new BoxLayout(getContentPane(),BoxLayout.LINE_AXIS));
         getRootPane().setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 
-        _jm = new JsonManager("config.json");
-        _autoSdarot = new AutoSdarot(_jm);
-        _autoAnimeTake = new AutoAnimeTake(_jm);
+        _autoSdarot = new AutoSdarot();
 
         setTitle("AutoSdarot");
         setVisible(true);
@@ -66,15 +62,7 @@ public class Application extends JFrame {
         _watchBtn = new JButton("Watch");
         _watchBtn.addActionListener(e -> {
             try {
-                switch (_jm.getPlatformOfSeries(_comboBox.getSelectedItem().toString())){
-                    case("sdarot"):
-                        _autoSdarot.execute(_comboBox.getSelectedItem().toString());
-                        break;
-                    case("animetake"):
-                        _autoAnimeTake.execute(_comboBox.getSelectedItem().toString());
-                        break;
-                }
-
+                _autoSdarot.execute(_comboBox.getSelectedItem().toString());
             } catch (InterruptedException e1) {
                 e1.printStackTrace();
             }
