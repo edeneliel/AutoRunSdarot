@@ -24,7 +24,7 @@ public class AddSeriesFrame extends JFrame {
 
         addWindowListener(new WindowAdapter(){
             public void windowClosing(WindowEvent e) {
-                app.updateSeries();
+                _application.updateSeries();
             }
         });
 

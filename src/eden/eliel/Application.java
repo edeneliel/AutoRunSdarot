@@ -4,8 +4,6 @@ import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * Created by Eden on 7/27/2016.
@@ -16,7 +14,7 @@ public class Application extends JFrame {
     private AutoAnimeTake _autoAnimeTake;
     private JPanel _details, _buttons;
     private JLabel _seasonTag,_episodeTag;
-    private JButton _watchBtn,_addBtn,_removeBtn;
+    private JButton _watchBtn,_addBtn,_removeBtn,_editMAL;
     private JComboBox _comboBox;
 
     public Application(){
@@ -33,6 +31,7 @@ public class Application extends JFrame {
 
         setDetailsPanel();
         setButtonsPanel();
+        updateSeries();
 
         _details.setAlignmentY(0f);
         add(_details);
@@ -43,21 +42,35 @@ public class Application extends JFrame {
     }
 
     public void addSeries(SearchSeriesBox seriesBox){
-        _autoSdarot.addSeries(seriesBox.getEngName(),seriesBox.getId());
+        _jm.setKeyBySeries(seriesBox.getEngName(),"Id",seriesBox.getId());
+    }
+    public void setMalId(String Series,String MalId){
+        _jm.setKeyBySeries(Series,"MAL",MalId);
     }
     public void updateSeries(){
-        _comboBox.setModel(new DefaultComboBoxModel(_autoSdarot.getAllSeries()));
+        _comboBox.setModel(new DefaultComboBoxModel(_jm.getSeriesNames().toArray()));
         _comboBox.setSelectedIndex(0);
+
         _seasonTag.setText("Season: " + _autoSdarot.getKeyBySeries(_comboBox.getSelectedItem().toString(), "Season"));
         _episodeTag.setText("Episode: " + _autoSdarot.getKeyBySeries(_comboBox.getSelectedItem().toString(), "Episode"));
+        if (_jm.getPlatformOfSeries(_comboBox.getSelectedItem().toString()).equals("animetake")) {
+            _seasonTag.setText("MAL: " + _autoSdarot.getKeyBySeries(_comboBox.getSelectedItem().toString(), "MAL"));
+            _editMAL.setVisible(true);
+        }
         pack();
     }
 
     private void setComboBox(){
-        _comboBox = new JComboBox(_autoSdarot.getAllSeries());
+        _comboBox = new JComboBox(_jm.getSeriesNames().toArray());
         _comboBox.addActionListener(e -> {
+            _editMAL.setVisible(false);
+            _editMAL.setVisible(false);
             _seasonTag.setText("Season: " + _autoSdarot.getKeyBySeries(_comboBox.getSelectedItem().toString(), "Season"));
             _episodeTag.setText("Episode: " + _autoSdarot.getKeyBySeries(_comboBox.getSelectedItem().toString(), "Episode"));
+            if (_jm.getPlatformOfSeries(_comboBox.getSelectedItem().toString()).equals("animetake")) {
+                _seasonTag.setText("MAL: " + _autoSdarot.getKeyBySeries(_comboBox.getSelectedItem().toString(), "MAL"));
+                _editMAL.setVisible(true);
+            }
             pack();
         });
         AutoCompleteDecorator.decorate(_comboBox);
@@ -78,6 +91,13 @@ public class Application extends JFrame {
             } catch (InterruptedException e1) {
                 e1.printStackTrace();
             }
+        });
+    }
+    private void setMalBtn(){
+        _editMAL = new JButton("Edit MAL");
+        _editMAL.addActionListener(e -> {
+            MalEditFrame malEditFrame = new MalEditFrame(this,_comboBox.getSelectedItem().toString());
+            malEditFrame.setVisible(true);
         });
     }
     private void setAddBtn(){
@@ -104,15 +124,13 @@ public class Application extends JFrame {
         _details = new JPanel();
         _details.setLayout(new BoxLayout(_details,BoxLayout.PAGE_AXIS));
         setComboBox();
-        _seasonTag = new JLabel("Season");
-        _episodeTag = new JLabel("Episode");
-        _seasonTag = new JLabel("Season: "+_autoSdarot.getKeyBySeries(_comboBox.getSelectedItem().toString(),"Season"));
-        _episodeTag = new JLabel("Episode: "+_autoSdarot.getKeyBySeries(_comboBox.getSelectedItem().toString(),"Episode"));
+        _seasonTag = new JLabel();
+        _episodeTag = new JLabel();
 
         // ComBox has a promblem with alignment.
         _comboBox.setAlignmentX(Component.LEFT_ALIGNMENT);
         _details.add(_comboBox);
-        _details.add(Box.createRigidArea(new Dimension(0,46)));
+        _details.add(Box.createRigidArea(new Dimension(0,80)));
         _details.add(_seasonTag);
         _details.add(_episodeTag);
     }
@@ -126,6 +144,8 @@ public class Application extends JFrame {
         setWatchBtn();
         setAddBtn();
         setRemoveBtn();
+        setMalBtn();
+
 
         _watchBtn.setAlignmentX(Component.RIGHT_ALIGNMENT);
         _buttons.add(_watchBtn);
@@ -135,5 +155,8 @@ public class Application extends JFrame {
         _buttons.add(Box.createRigidArea(new Dimension(0,10)));
         _removeBtn.setAlignmentX(Component.RIGHT_ALIGNMENT);
         _buttons.add(_removeBtn);
+        _buttons.add(Box.createRigidArea(new Dimension(0,10)));
+        _editMAL.setAlignmentX(Component.RIGHT_ALIGNMENT);
+        _buttons.add(_editMAL);
     }
 }
