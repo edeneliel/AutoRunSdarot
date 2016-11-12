@@ -6,6 +6,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -20,7 +22,7 @@ public class AutoAnimeTake {
     private String _seriesId;
     private String _seriesWatchId;
     private String _malSeriesId;
-    private int _currentEpisode;
+    private String _currentEpisode;
 
     public AutoAnimeTake(JsonManager jsonManager){
         _jm = jsonManager;
@@ -34,21 +36,22 @@ public class AutoAnimeTake {
         _webDriver.manage().window().maximize();
 
         setSeries(seriesName);
-        int maxEpisode;
 
         if (_seriesId == null) {
             _webDriver.close();
             return;
         }
-        maxEpisode = getEpisodesLength();
-        for (; _currentEpisode <= maxEpisode; _currentEpisode++) {
-            _webDriver.get(DEFAULT_WATCH_URL + "/watch/" + _seriesWatchId + "-episode-" + _currentEpisode);
+        ArrayList<String> AllEpisodes = getEpisodes();
+
+        for (int i = AllEpisodes.indexOf(_currentEpisode); i<AllEpisodes.size(); i++){
+            _webDriver.get(DEFAULT_WATCH_URL + "/watch/" + _seriesWatchId + "-episode-" + AllEpisodes.get(i));
             playVideo();
 
             while (!_js.executeScript("return player.ended()").toString().equals("true"))
                 Thread.sleep(2000);
-            updateJson(seriesName,_currentEpisode+1);
-            MyAnimeListApi.updateMalSeries(_malSeriesId,"episode="+_currentEpisode);
+
+            updateJson(seriesName,AllEpisodes.get(i+1));
+            MyAnimeListApi.updateMalSeries(_malSeriesId,"episode="+AllEpisodes.get(i));
         }
         _webDriver.close();
     }
@@ -62,18 +65,24 @@ public class AutoAnimeTake {
         _seriesId = _jm.getKeyBySeries(seriesName,"Id");
         _seriesWatchId = _jm.getKeyBySeries(seriesName,"WatchId");
         _malSeriesId = _jm.getKeyBySeries(seriesName,"MAL");
-        _currentEpisode = Integer.parseInt(_jm.getKeyBySeries(seriesName,"Episode"));
+        _currentEpisode = _jm.getKeyBySeries(seriesName,"Episode");
         if (_seriesWatchId == null){
             _seriesWatchId = _seriesId;
         }
     }
-    private int getEpisodesLength(){
+    private ArrayList<String> getEpisodes(){
+        ArrayList episodes = new ArrayList<String>();
         _webDriver.get(DEFAULT_WATCH_URL + "/anime/" + _seriesId);
-        String href = _webDriver.findElement(By.xpath("((//body//*[@class='no-bullet'])[1]/*)[1]")).getAttribute("href");
-        href = href.substring(href.lastIndexOf("-")+1,href.length()-1);
-        return Integer.parseInt(href);
+        List<WebElement> episodesElements = _webDriver.findElements(By.xpath("(//body//*[@class='no-bullet'])[1]/*"));
+        for (WebElement episodeElement : episodesElements){
+            String href = episodeElement.getAttribute("href");
+            href = href.substring(href.lastIndexOf("-")+1,href.length()-1);
+            episodes.add(href);
+        }
+        Collections.reverse(episodes);
+        return episodes;
     }
-    private void updateJson(String seriesName, int episode){
-        _jm.setKeyBySeries(seriesName,"Episode", episode+"");
+    private void updateJson(String seriesName, String episode){
+        _jm.setKeyBySeries(seriesName,"Episode", episode);
     }
 }
