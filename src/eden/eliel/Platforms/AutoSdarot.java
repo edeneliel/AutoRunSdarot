@@ -1,5 +1,6 @@
-package eden.eliel;
+package eden.eliel.Platforms;
 
+import eden.eliel.Api.JsonManager;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -21,8 +22,8 @@ public class AutoSdarot {
     private int _currentSeason;
     private int _currentEpisode;
 
-    public AutoSdarot(){
-        _jm = new JsonManager("config.json");
+    public AutoSdarot(JsonManager jsonManager){
+        _jm = jsonManager;
 
         System.setProperty("webdriver.chrome.driver", "C://chromedriver.exe");
     }
@@ -88,15 +89,8 @@ public class AutoSdarot {
         _currentSeason = Integer.parseInt(_jm.getKeyBySeries(seriesName,"Season"));
         _currentEpisode = Integer.parseInt(_jm.getKeyBySeries(seriesName,"Episode"));
     }
-    public String[] getAllSeries(){
-        String [] result = new String[0];
-        return _jm.getSeriesNames().toArray(result);
-    }
     public String getKeyBySeries(String series,String key){
         return _jm.getKeyBySeries(series,key);
-    }
-    public void addSeries(String seriesName, String id) {
-        _jm.setKeyBySeries(seriesName,"Id",id);
     }
     public boolean removeSeries(String series) {
         return _jm.removeSeries(series);

@@ -1,4 +1,4 @@
-package eden.eliel;
+package eden.eliel.Search;
 
 /**
  * Created by Eden on 7/30/2016.

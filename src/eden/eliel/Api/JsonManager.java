@@ -1,4 +1,4 @@
-package eden.eliel;
+package eden.eliel.Api;
 
 import com.google.gson.Gson;
 
@@ -78,6 +78,13 @@ public class JsonManager {
         for (Map<String,String> series:_series)
             result.add(series.get("Name"));
         return result;
+    }
+    public String getPlatformOfSeries(String series){
+        for (Map<String,String> seriesDetails:_series){
+            if (seriesDetails.get("Name").equals(series))
+                return seriesDetails.get("Platform");
+        }
+        return "";
     }
 
     private Map<String, String> getSeriesMap(String series){
