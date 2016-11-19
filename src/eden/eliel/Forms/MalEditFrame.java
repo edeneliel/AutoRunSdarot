@@ -1,4 +1,6 @@
-package eden.eliel;
+package eden.eliel.Forms;
+
+import eden.eliel.Forms.Application;
 
 import javax.swing.*;
 import java.awt.*;

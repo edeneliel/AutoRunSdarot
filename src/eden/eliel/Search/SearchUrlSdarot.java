@@ -1,4 +1,4 @@
-package eden.eliel;
+package eden.eliel.Search;
 
 import java.io.*;
 import java.net.HttpURLConnection;

@@ -1,4 +1,4 @@
-package eden.eliel;
+package eden.eliel.Api;
 
 import com.google.gson.Gson;
 

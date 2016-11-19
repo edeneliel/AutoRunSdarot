@@ -1,5 +1,6 @@
-package eden.eliel;
+package eden.eliel.Platforms;
 
+import eden.eliel.Api.JsonManager;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
