@@ -21,7 +21,7 @@ public class SearchAnimeTake {
     private final String BASE_ANIME_URL = "http://animetake.tv/anime/";
     private final String HREF_REGEX = "href=\"/anime/(.*)?/\"";
     private final String NAME_REGEX = "<center>(.*)?</center>";
-    private final String WATCH_REGEX = "<a href=\"/watch/(.*)-.*/\"/>";
+    private final String WATCH_REGEX = "<a href=\"/watch/(.*)-episode.*/\"/>";
 
     public ArrayList<SearchSeriesBox> SearchSeries(String input){
         Pattern pattern;
