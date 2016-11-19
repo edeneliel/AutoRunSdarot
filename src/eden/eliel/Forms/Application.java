@@ -1,5 +1,9 @@
-package eden.eliel;
+package eden.eliel.Forms;
 
+import eden.eliel.Api.JsonManager;
+import eden.eliel.Platforms.AutoAnimeTake;
+import eden.eliel.Platforms.AutoSdarot;
+import eden.eliel.Search.SearchSeriesBox;
 import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 
 import javax.swing.*;
@@ -41,8 +45,12 @@ public class Application extends JFrame {
         pack();
     }
 
-    public void addSeries(SearchSeriesBox seriesBox){
+    public JsonManager getJsonManager() {
+        return _jm;
+    }
+    public void addSeries(SearchSeriesBox seriesBox, String platform){
         _jm.setKeyBySeries(seriesBox.getEngName(),"Id",seriesBox.getId());
+        _jm.setKeyBySeries(seriesBox.getEngName(),"Platform",platform);
     }
     public void setMalId(String Series,String MalId){
         _jm.setKeyBySeries(Series,"MAL",MalId);
