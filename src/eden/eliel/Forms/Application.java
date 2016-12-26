@@ -86,18 +86,13 @@ public class Application extends JFrame {
     private void setWatchBtn(){
         _watchBtn = new JButton("Watch");
         _watchBtn.addActionListener(e -> {
-            try {
-                switch (_jm.getPlatformOfSeries(_comboBox.getSelectedItem().toString())){
-                    case("sdarot"):
-                        _autoSdarot.execute(_comboBox.getSelectedItem().toString());
-                        break;
-                    case("animetake"):
-                        _autoAnimeTake.execute(_comboBox.getSelectedItem().toString());
-                        break;
-                }
-
-            } catch (InterruptedException e1) {
-                e1.printStackTrace();
+            switch (_jm.getPlatformOfSeries(_comboBox.getSelectedItem().toString())){
+                case("sdarot"):
+                    _autoSdarot.execute(_comboBox.getSelectedItem().toString());
+                    break;
+                case("animetake"):
+                    _autoAnimeTake.execute(_comboBox.getSelectedItem().toString());
+                    break;
             }
         });
     }
