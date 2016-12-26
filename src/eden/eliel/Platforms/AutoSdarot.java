@@ -28,7 +28,7 @@ public class AutoSdarot {
         System.setProperty("webdriver.chrome.driver", "C://chromedriver.exe");
     }
 
-    public void execute(String seriesName) throws InterruptedException {
+    public void execute(String seriesName) {
         _webDriver = new ChromeDriver();
         _js = (JavascriptExecutor) _webDriver;
         _webDriver.manage().window().maximize();
@@ -47,42 +47,47 @@ public class AutoSdarot {
             updateJson(seriesName,_currentSeason,_currentEpisode);
             maxEpisode = getEpisodesLength();
             for (; _currentEpisode <= maxEpisode; _currentEpisode++) {
-                _webDriver.get(DEFAULT_WATCH_URL+_seriesId+ "/season/" + _currentSeason + "/episode/" + _currentEpisode);
-                needRefresh = true;
+                try {
+                    _webDriver.get(DEFAULT_WATCH_URL + _seriesId + "/season/" + _currentSeason + "/episode/" + _currentEpisode);
+                    needRefresh = true;
 
-                while (needRefresh) {
-                    while (!_webDriver.findElement(By.id("proceed")).getAttribute("style").equals("display: inline-block;")) {
-                        if (_webDriver.findElement(By.xpath("//body/div[@class='container']/*[@id='loading']//h1")).getText().equals("שגיאה!"))
-                            _webDriver.navigate().refresh();
+                    while (needRefresh) {
+                        while (!_webDriver.findElement(By.id("proceed")).getAttribute("style").equals("display: inline-block;")) {
+                            if (_webDriver.findElement(By.xpath("//body/div[@class='container']/*[@id='loading']//h1")).getText().equals("שגיאה!"))
+                                _webDriver.navigate().refresh();
+                            Thread.sleep(2000);
+                        }
+                        removeAds();
+
+                        _js.executeScript("scroll(0,250)");
+                        _webDriver.findElement(By.id("proceed")).click();
+
+                        videoError = false;
+                        while (!videoError && !_js.executeScript("return jwplayer().getState()").equals("playing")) {
+                            if (_js.executeScript("return jwplayer().getState()").equals("error")) {
+                                videoError = true;
+                                _webDriver.navigate().refresh();
+                            } else {
+                                if (!_js.executeScript("return jwplayer().getState()").equals("buffering"))
+                                    playVideo();
+                            }
+                            needRefresh = videoError;
+                            Thread.sleep(1000);
+                        }
+                    }
+
+                    while (!_js.executeScript("return jwplayer().getState()").equals("complete"))
                         Thread.sleep(2000);
-                    }
-                    removeAds();
 
-                    _js.executeScript("scroll(0,250)");
-                    _webDriver.findElement(By.id("proceed")).click();
-
-                    videoError = false;
-                    while (!videoError && !_js.executeScript("return jwplayer().getState()").equals("playing")) {
-                        if (_js.executeScript("return jwplayer().getState()").equals("error")) {
-                            videoError = true;
-                            _webDriver.navigate().refresh();
-                        }
-                        else {
-                            if (!_js.executeScript("return jwplayer().getState()").equals("buffering"))
-                                playVideo();
-                        }
-                        needRefresh = videoError;
-                        Thread.sleep(1000);
-                    }
+                    updateJson(seriesName, _currentSeason, _currentEpisode + 1);
+                    _currentEpisode = 1;
                 }
-
-                while (!_js.executeScript("return jwplayer().getState()").equals("complete"))
-                    Thread.sleep(2000);
-                updateJson(seriesName,_currentSeason,_currentEpisode+1);
+                catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
-            _currentEpisode = 1;
         }
-        _webDriver.close();
+        _webDriver.quit();
     }
     public void setSeries(String seriesName){
         _seriesId = _jm.getKeyBySeries(seriesName,"Id");
