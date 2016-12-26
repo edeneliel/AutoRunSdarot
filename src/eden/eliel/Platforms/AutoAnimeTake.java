@@ -33,6 +33,7 @@ public class AutoAnimeTake {
     }
 
     public void execute(String seriesName){
+        boolean finished = false;
         _webDriver = new ChromeDriver();
         _js = (JavascriptExecutor) _webDriver;
         _webDriver.manage().window().maximize();
@@ -47,13 +48,17 @@ public class AutoAnimeTake {
 
         if (_jm.getKeyBySeries(seriesName,"FinishedEpisode") != null &&
                 _jm.getKeyBySeries(seriesName,"FinishedEpisode").equals("true") &&
-                AllEpisodes.indexOf(_currentEpisode) != AllEpisodes.size()-1)
-            _currentEpisode = AllEpisodes.get(AllEpisodes.indexOf(_currentEpisode)+1);
+                AllEpisodes.indexOf(_currentEpisode) != AllEpisodes.size()-1) {
+            _currentEpisode = AllEpisodes.get(AllEpisodes.indexOf(_currentEpisode) + 1);
+            finished = true;
+        }
 
         for (int i = AllEpisodes.indexOf(_currentEpisode); i<AllEpisodes.size(); i++){
             try {
                 ArrayList <String> myAnimeListApiParams = new ArrayList<>();
-                _jm.setKeyBySeries(seriesName,"FinishedEpisode","false");
+                if (!finished)
+                    _jm.setKeyBySeries(seriesName,"FinishedEpisode","false");
+                finished = false;
                 _webDriver.get(DEFAULT_WATCH_URL + "/watch/" + _seriesWatchId + "-episode-" + AllEpisodes.get(i));
                 playVideo();
 
