@@ -4,21 +4,23 @@ package eden.eliel.Search;
  * Created by Eden on 7/30/2016.
  */
 public class SearchSeriesBox {
-    private String _hebName,_engName,_id;
+    private String hebName;
+    private String engName;
+    private String id;
 
     public SearchSeriesBox(String hebName,String engName,String id){
-        _hebName = hebName;
-        _engName = engName;
-        _id = id;
+        this.hebName = hebName;
+        this.engName = engName;
+        this.id = id;
     }
 
     public String getHebName(){
-        return _hebName;
+        return hebName;
     }
     public String getEngName(){
-        return _engName;
+        return engName;
     }
     public String getId(){
-        return _id;
+        return id;
     }
 }

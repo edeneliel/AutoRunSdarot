@@ -15,49 +15,50 @@ import java.util.ArrayList;
  * Created by Eden on 7/30/2016.
  */
 public class AddSeriesFrame extends JFrame {
-    private Application _application;
-    private JsonManager _jm;
-    private SearchUrlSdarot _searchSdarot;
-    private SearchAnimeTake _searchAnimeTake;
-    private ArrayList<SearchSeriesBox> _resultSeries;
-    private JPanel _searchPanel,_searchResult;
-    private JComboBox _platfrom;
-    private JTextField _inputField;
-    private JButton _submitBtn;
+    private Application application;
+    private JsonManager jsonManager;
+    private SearchUrlSdarot searchUrlSdarot;
+    private SearchAnimeTake searchAnimeTake;
+    private ArrayList<SearchSeriesBox> resultSeries;
+    private JPanel searchPanel;
+    private JPanel searchResult;
+    private JComboBox platfrom;
+    private JTextField inputField;
+    private JButton submitBtn;
 
     public AddSeriesFrame(Application application){
-        _application = application;
-        _jm = _application.getJsonManager();
+        this.application = application;
+        jsonManager = this.application.getJsonManager();
 
         addWindowListener(new WindowAdapter(){
             public void windowClosing(WindowEvent e) {
-                _application.updateSeries();
+                AddSeriesFrame.this.application.updateSeries();
             }
         });
 
         setLayout(new BoxLayout(getContentPane(),BoxLayout.PAGE_AXIS));
         getRootPane().setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 
-        _searchSdarot = new SearchUrlSdarot();
-        _searchAnimeTake = new SearchAnimeTake();
-        _resultSeries = new ArrayList<>();
+        searchUrlSdarot = new SearchUrlSdarot();
+        searchAnimeTake = new SearchAnimeTake();
+        resultSeries = new ArrayList<>();
 
         setSearchPanel();
         setSearchResult();
 
-        add(_searchPanel);
-        add(new JScrollPane(_searchResult));
+        add(searchPanel);
+        add(new JScrollPane(searchResult));
 
         pack();
     }
 
     private void setSearchPanel(){
-        _searchPanel = new JPanel();
-        _searchPanel.setLayout(new BoxLayout(_searchPanel,BoxLayout.X_AXIS));
+        searchPanel = new JPanel();
+        searchPanel.setLayout(new BoxLayout(searchPanel,BoxLayout.X_AXIS));
 
-        _inputField = new JTextField(30);
-        _submitBtn = new JButton("Submit");
-        _submitBtn.addActionListener(e -> {
+        inputField = new JTextField(30);
+        submitBtn = new JButton("Submit");
+        submitBtn.addActionListener(e -> {
             addResultToArray();
             pack();
             if (getHeight()>350)
@@ -65,50 +66,50 @@ public class AddSeriesFrame extends JFrame {
 
         });
 
-        getRootPane().setDefaultButton(_submitBtn);
+        getRootPane().setDefaultButton(submitBtn);
         setComboBoxPlatform();
 
-        _searchPanel.add(_inputField);
-        _searchPanel.add(_platfrom);
-        _searchPanel.add(Box.createRigidArea(new Dimension(15,0)));
-        _searchPanel.add(_submitBtn);
+        searchPanel.add(inputField);
+        searchPanel.add(platfrom);
+        searchPanel.add(Box.createRigidArea(new Dimension(15,0)));
+        searchPanel.add(submitBtn);
     }
     private void setSearchResult(){
-        _searchResult = new JPanel();
-        _searchResult.setLayout(new GridLayout(0,2));
+        searchResult = new JPanel();
+        searchResult.setLayout(new GridLayout(0,2));
     }
     private void addResultToArray(){
-        _searchResult.removeAll();
+        searchResult.removeAll();
 
-        switch (_platfrom.getSelectedItem().toString()) {
+        switch (platfrom.getSelectedItem().toString()) {
             case ("AnimeTake"):
-                _resultSeries = _searchAnimeTake.SearchSeries(_inputField.getText());
+                resultSeries = searchAnimeTake.SearchSeries(inputField.getText());
                 break;
             case ("Sdarot"):
-                if (!_inputField.getText().equals("") && _inputField.getText().length() >= 3) {
-                    _resultSeries = _searchSdarot.SearchSeries(_inputField.getText());
+                if (!inputField.getText().equals("") && inputField.getText().length() >= 3) {
+                    resultSeries = searchUrlSdarot.SearchSeries(inputField.getText());
                 }
                 else{
-                    _resultSeries.clear();
+                    resultSeries.clear();
                 }
         }
 
-        for (SearchSeriesBox seriesBox : _resultSeries) {
+        for (SearchSeriesBox seriesBox : resultSeries) {
             JButton btn = new JButton(seriesBox.getEngName());
             btn.addActionListener(e -> {
-                _jm.setKeyBySeries(seriesBox.getEngName(),"Id",seriesBox.getId());
-                _jm.setKeyBySeries(seriesBox.getEngName(),"Platform",_platfrom.getSelectedItem().toString().toLowerCase());
-                if (_platfrom.getSelectedItem().toString().equals("AnimeTake") &&
-                        !_searchAnimeTake.getAnimeWatchId(seriesBox.getId()).equals(seriesBox.getId())) {
-                    _jm.setKeyBySeries(seriesBox.getEngName(),"WatchId",_searchAnimeTake.getAnimeWatchId(seriesBox.getId()));
+                jsonManager.setKeyBySeries(seriesBox.getEngName(),"Id",seriesBox.getId());
+                jsonManager.setKeyBySeries(seriesBox.getEngName(),"Platform", platfrom.getSelectedItem().toString().toLowerCase());
+                if (platfrom.getSelectedItem().toString().equals("AnimeTake") &&
+                        !searchAnimeTake.getAnimeWatchId(seriesBox.getId()).equals(seriesBox.getId())) {
+                    jsonManager.setKeyBySeries(seriesBox.getEngName(),"WatchId", searchAnimeTake.getAnimeWatchId(seriesBox.getId()));
                 }
 
                 JOptionPane.showMessageDialog(this, "Series has been added");
             });
-            _searchResult.add(btn);
+            searchResult.add(btn);
         }
     }
     private void setComboBoxPlatform(){
-        _platfrom = new JComboBox(new String [] {"AnimeTake","Sdarot"});
+        platfrom = new JComboBox(new String [] {"AnimeTake","Sdarot"});
     }
 }

@@ -18,11 +18,11 @@ public class SearchUrlSdarot {
     private final String FIRST_INFO_PATTERN = "<a href=\"\\/watch\\/(.*?)-.*\">(.*)<\\/a>";
     private final String SECOND_INFO_PATTERN = "<h4>(.*)<\\/h4>";
 
-    private URL _url;
+    private URL url;
 
     public SearchUrlSdarot() {
         try {
-            _url = new URL(DEFAULT_WATCH_URL);
+            url = new URL(DEFAULT_WATCH_URL);
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -36,7 +36,7 @@ public class SearchUrlSdarot {
         String firstInfo,secondInfo;
 
         try {
-            HttpURLConnection hConnection = setUrlConnection(_url);
+            HttpURLConnection hConnection = setUrlConnection(url);
             PrintStream ps = new PrintStream( hConnection.getOutputStream() );
             ps.print("search=" + input + "&x=0&y=0");
             ps.close();
