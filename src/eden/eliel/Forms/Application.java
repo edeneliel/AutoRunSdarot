@@ -3,11 +3,14 @@ package eden.eliel.Forms;
 import eden.eliel.Api.JsonManager;
 import eden.eliel.Platforms.AutoAnimeTake;
 import eden.eliel.Platforms.AutoSdarot;
+import eden.eliel.Platforms.Platform;
 import eden.eliel.Search.SearchSeriesBox;
+import eden.eliel.Listeners.TCPListener;
 import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 
 /**
  * Created by Eden on 7/27/2016.
@@ -19,6 +22,7 @@ public class Application extends JFrame {
     private JsonManager jsonManager;
     private AutoSdarot autoSdarot;
     private AutoAnimeTake autoAnimeTake;
+    private Platform currentPlatform;
     private JPanel details;
     private JPanel buttons;
     private JLabel seasonTag;
@@ -28,6 +32,7 @@ public class Application extends JFrame {
     private JButton removeBtn;
     private JButton editMalBtn;
     private JComboBox combobox;
+    private TCPListener tcpListener;
 
     public Application(){
         setLayout(new BoxLayout(getContentPane(),BoxLayout.LINE_AXIS));
@@ -36,6 +41,7 @@ public class Application extends JFrame {
         jsonManager = new JsonManager(JSON_PATH);
         autoSdarot = new AutoSdarot(jsonManager);
         autoAnimeTake = new AutoAnimeTake(jsonManager);
+        setTCPListener();
 
         setTitle(TITLE_NAME);
         setVisible(true);
@@ -97,12 +103,13 @@ public class Application extends JFrame {
             try {
                 switch (jsonManager.getPlatformOfSeries(combobox.getSelectedItem().toString())){
                     case("sdarot"):
-                        autoSdarot.execute(combobox.getSelectedItem().toString());
+                        currentPlatform = autoSdarot;
                         break;
                     case("animetake"):
-                        autoAnimeTake.execute(combobox.getSelectedItem().toString());
+                        currentPlatform = autoAnimeTake;
                         break;
                 }
+                currentPlatform.execute(combobox.getSelectedItem().toString());
             } catch (InterruptedException e1) {
                 e1.printStackTrace();
             }
@@ -173,6 +180,47 @@ public class Application extends JFrame {
         buttons.add(Box.createRigidArea(new Dimension(0,10)));
         editMalBtn.setAlignmentX(Component.RIGHT_ALIGNMENT);
         buttons.add(editMalBtn);
+    }
+    private void setTCPListener() {
+        tcpListener = new TCPListener(1000){
+            @Override
+            public double onRequest(String str) {
+                if (currentPlatform == null || !currentPlatform.isPlaying())
+                    return 0;
+                switch (str) {
+                    case ("current-time"):
+                        return currentPlatform.getTime();
+                    case ("duration"):
+                        return currentPlatform.getDuration();
+                    case ("pause"):
+                        currentPlatform.pauseVideoRequest();
+                        break;
+                    case ("next"):
+                        currentPlatform.nextVideoRequest();
+                        break;
+                    case ("previous"):
+                        currentPlatform.prevVideoRequest();
+                        break;
+                    case ("play"):
+                        currentPlatform.playVideoRequest();
+                        break;
+                    case ("shutdown-pc"):
+                        Runtime runtime = Runtime.getRuntime();
+                        try {
+                            Process proc = runtime.exec("shutdown -s -t 0");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        System.exit(0);
+                        break;
+                }
+                if (str.startsWith("progress: ")) {
+                    currentPlatform.setCurrentTime(Integer.parseInt(str.replace("progress: ","")));
+                }
+                return 0;
+            }
+        };
+        tcpListener.start();
     }
     private boolean removeSeries(String series) {
         return jsonManager.removeSeries(series);

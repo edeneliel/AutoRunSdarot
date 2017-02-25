@@ -3,6 +3,7 @@ package eden.eliel.Search;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,7 +39,7 @@ public class SearchUrlSdarot {
         try {
             HttpURLConnection hConnection = setUrlConnection(url);
             PrintStream ps = new PrintStream( hConnection.getOutputStream() );
-            ps.print("search=" + input + "&x=0&y=0");
+            ps.print("search=" + URLEncoder.encode(input,"UTF-8") + "&x=0&y=0");
             ps.close();
             hConnection.connect();
 
