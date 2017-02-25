@@ -8,11 +8,13 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Created by Eden on 7/22/2016.
  */
-public class AutoSdarot {
+public class AutoSdarot implements Platform{
     private final String DEFAULT_WATCH_URL="http://www.sdarot.pm/watch/";
     private final String CHROME_DRIVER = "webdriver.chrome.driver";
     private final String CHROME_DRIVER_PATH = "C://chromedriver.exe";
@@ -20,20 +22,28 @@ public class AutoSdarot {
     private WebDriver webDriver;
     private JavascriptExecutor javascriptExecutor;
     private JsonManager jsonManager;
+    private String seriesName;
     private String seriesId;
     private int currentSeason;
     private int currentEpisode;
+    private int episodesController;
+    private boolean playing;
 
     public AutoSdarot(JsonManager jsonManager){
         this.jsonManager = jsonManager;
+        episodesController = 0;
+        playing = false;
 
         System.setProperty(CHROME_DRIVER, CHROME_DRIVER_PATH);
     }
 
+    @Override
     public void execute(String seriesName) throws InterruptedException {
-        webDriver = new ChromeDriver();
-        javascriptExecutor = (JavascriptExecutor) webDriver;
-        webDriver.manage().window().maximize();
+        if (webDriver == null) {
+            webDriver = new ChromeDriver();
+            javascriptExecutor = (JavascriptExecutor) webDriver;
+            webDriver.manage().window().maximize();
+        }
 
         setSeries(seriesName);
         int maxSeason, maxEpisode;
@@ -53,19 +63,58 @@ public class AutoSdarot {
                 try {
                     clickAfterWait();
 
-                    while (!javascriptExecutor.executeScript("return jwplayer().getState()").equals("complete"))
+                    playing = true;
+                    while (!javascriptExecutor.executeScript("return jwplayer().getState()").equals("complete") && episodesController == 0)
                         Thread.sleep(2000);
+                    playing = false;
+
+                    if (episodesController != 0) {
+                        currentEpisode += episodesController-1;
+                        episodesController = 0;
+                    }
+                    updateJson(seriesName, currentSeason, currentEpisode + 1);
                 }
                 catch (Exception e){
                     webDriver.quit();
                 }
-
-                updateJson(seriesName, currentSeason, currentEpisode + 1);
             }
             currentEpisode = 1;
         }
         webDriver.quit();
     }
+    @Override
+    public void pauseVideoRequest() {
+        javascriptExecutor.executeScript("jwplayer().pause()");
+    }
+    @Override
+    public void playVideoRequest() {
+        javascriptExecutor.executeScript("jwplayer().play()");
+    }
+    @Override
+    public void nextVideoRequest() {
+        episodesController = 1;
+    }
+    @Override
+    public void prevVideoRequest() {
+        episodesController = -1;
+    }
+    @Override
+    public void setCurrentTime(int timePercent) {
+        javascriptExecutor.executeScript("jwplayer().seek(" + (timePercent*getDuration()/100) + ")");
+    }
+    @Override
+    public double getTime() {
+        return Double.parseDouble(javascriptExecutor.executeScript("return jwplayer().getPosition()").toString());
+    }
+    @Override
+    public double getDuration() {
+        return Double.parseDouble(javascriptExecutor.executeScript("return jwplayer().getDuration()").toString());
+    }
+    @Override
+    public boolean isPlaying() {
+        return playing;
+    }
+
     public String getKeyBySeries(String series,String key){
         return jsonManager.getKeyBySeries(series,key);
     }
@@ -100,6 +149,7 @@ public class AutoSdarot {
         }
     }
     private void setSeries(String seriesName){
+        this.seriesName = seriesName;
         seriesId = jsonManager.getKeyBySeries(seriesName,"Id");
         currentSeason = Integer.parseInt(jsonManager.getKeyBySeries(seriesName,"Season"));
         currentEpisode = Integer.parseInt(jsonManager.getKeyBySeries(seriesName,"Episode"));

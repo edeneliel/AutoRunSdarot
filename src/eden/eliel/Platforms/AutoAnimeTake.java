@@ -13,7 +13,7 @@ import java.util.*;
 /**
  * Created by Eden on 10/4/2016.
  */
-public class AutoAnimeTake {
+public class AutoAnimeTake implements Platform{
     private final String DEFAULT_WATCH_URL = "https://animetake.tv";
     private final String CHROME_DRIVER = "webdriver.chrome.driver";
     private final String CHROME_DRIVER_PATH = "C://chromedriver.exe";
@@ -32,6 +32,7 @@ public class AutoAnimeTake {
         System.setProperty(CHROME_DRIVER, CHROME_DRIVER_PATH);
     }
 
+    @Override
     public void execute(String seriesName) throws InterruptedException {
         boolean alreadyFinished = false;
         webDriver = new ChromeDriver();
@@ -58,6 +59,38 @@ public class AutoAnimeTake {
         }
 
         webDriver.quit();
+    }
+    @Override
+    public void pauseVideoRequest() {
+        javascriptExecutor.executeScript("$('#olvideo_html5_api')[0].pause()");
+    }
+    @Override
+    public void playVideoRequest() {
+        javascriptExecutor.executeScript("$('#olvideo_html5_api')[0].play()");
+    }
+    @Override
+    public void nextVideoRequest() {
+
+    }
+    @Override
+    public void prevVideoRequest() {
+
+    }
+    @Override
+    public void setCurrentTime(int timePercent) {
+
+    }
+    @Override
+    public double getTime() {
+        return 0;
+    }
+    @Override
+    public double getDuration() {
+        return 0;
+    }
+    @Override
+    public boolean isPlaying() {
+        return false;
     }
 
     private void startWatchingSeries(String seriesName,ArrayList<String> allEpisodes) throws InterruptedException {
