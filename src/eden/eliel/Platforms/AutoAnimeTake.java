@@ -25,9 +25,13 @@ public class AutoAnimeTake implements Platform{
     private String seriesWatchId;
     private String malSeriesId;
     private String currentEpisode;
+    private int episodesController;
+    private boolean playing;
 
     public AutoAnimeTake(JsonManager jsonManager){
         this.jsonManager = jsonManager;
+        episodesController = 0;
+        playing = false;
 
         System.setProperty(CHROME_DRIVER, CHROME_DRIVER_PATH);
     }
@@ -70,36 +74,42 @@ public class AutoAnimeTake implements Platform{
     }
     @Override
     public void nextVideoRequest() {
-
+        episodesController = -1;
     }
     @Override
     public void prevVideoRequest() {
-
+        episodesController = 1;
     }
     @Override
     public void setCurrentTime(int timePercent) {
-
+        javascriptExecutor.executeScript("$('#olvideo_html5_api')[0].currentTime = " + (timePercent*getDuration()/100));
     }
     @Override
     public double getTime() {
-        return 0;
+        return Double.parseDouble(javascriptExecutor.executeScript("return $('#olvideo_html5_api')[0].currentTime").toString());
     }
     @Override
     public double getDuration() {
-        return 0;
+        return Double.parseDouble(javascriptExecutor.executeScript("return $('#olvideo_html5_api')[0].duration").toString());
     }
     @Override
     public boolean isPlaying() {
-        return false;
+        return playing;
     }
 
     private void startWatchingSeries(String seriesName,ArrayList<String> allEpisodes) throws InterruptedException {
-        for (int i = allEpisodes.indexOf(currentEpisode); i<allEpisodes.size(); i++){
+        for (int i = allEpisodes.indexOf(currentEpisode); i>0; i--){
             ArrayList <String> myAnimeListApiParams = new ArrayList<>();
             jsonManager.setKeyBySeries(seriesName,"FinishedEpisode","false");
             updateJson(seriesName,allEpisodes.get(i));
             webDriver.get(DEFAULT_WATCH_URL + "/watch/" + seriesWatchId + "-episode-" + allEpisodes.get(i));
+            System.out.println(i + " - " + allEpisodes.get(i));
             playVideo();
+            if (episodesController != 0){
+                i += episodesController+1;
+                episodesController = 0;
+            }
+            System.out.println(i + " - " + allEpisodes.get(i));
 
             if (allEpisodes.get(i).contains("final"))
                 myAnimeListApiParams.add("status=2");
@@ -108,7 +118,7 @@ public class AutoAnimeTake implements Platform{
                 MyAnimeListApi.updateMalSeries(malSeriesId, myAnimeListApiParams.toArray(new String[myAnimeListApiParams.size()]));
             jsonManager.setKeyBySeries(seriesName,"FinishedEpisode","true");
             if (!(i+1 >= allEpisodes.size()))
-                updateJson(seriesName,allEpisodes.get(i+1));
+                updateJson(seriesName,allEpisodes.get(i-1));
         }
 
     }
@@ -134,14 +144,20 @@ public class AutoAnimeTake implements Platform{
             String streamurl = javascriptExecutor.executeScript("return $('#streamurl')[0].innerHTML").toString();
             javascriptExecutor.executeScript("document.getElementById('olvideo_html5_api').setAttribute('src','/stream/" + streamurl + "?mime=true')");
             javascriptExecutor.executeScript("$('#olvideo_html5_api')[0].play()");
-            while (!javascriptExecutor.executeScript("return $('#olvideo_html5_api')[0].ended").toString().equals("true"))
+            while (!javascriptExecutor.executeScript("return $('#olvideo_html5_api')[0].ended").toString().equals("true") && episodesController == 0){
                 Thread.sleep(2000);
+                playing = true;
+            }
+            playing = false;
         }
         else {
             javascriptExecutor.executeScript("document.getElementsByClassName('embed-responsive embed-responsive-16by9')[0].setAttribute('style', 'height: 1020px!important; width: 1910px!important')");
             javascriptExecutor.executeScript("scroll(1000,430)");
-            while (!javascriptExecutor.executeScript("return document.getElementsByTagName('video')[0].ended").toString().equals("true"))
+            while (!javascriptExecutor.executeScript("return document.getElementsByTagName('video')[0].ended").toString().equals("true") && episodesController == 0){
                 Thread.sleep(2000);
+                playing = true;
+            }
+            playing = false;
         }
     }
     private void removeAds() {
