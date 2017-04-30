@@ -17,8 +17,8 @@ import java.util.regex.Pattern;
  */
 public class SearchAnimeTake {
     private final String USER_AGENT = "Mozilla/5.0";
-    private final String BASE_URL = "http://animetake.tv/search/?key=";
-    private final String BASE_ANIME_URL = "http://animetake.tv/anime/";
+    private final String BASE_URL = "https://animetake.tv/search/?key=";
+    private final String BASE_ANIME_URL = "https://animetake.tv/anime/";
     private final String HREF_REGEX = "href=\"/anime/(.*)?/\"";
     private final String NAME_REGEX = "<center>(.*)?</center>";
     private final String WATCH_REGEX = "<a href=\"/watch/(.*)-episode.*/\".*>";
@@ -41,7 +41,7 @@ public class SearchAnimeTake {
                     matcher = pattern.matcher(line);
                     matcher.find();
                     String id = matcher.group(1);
-                    while ((line = buff.readLine())!= null && !line.contains("center"))
+                    while ((line = buff.readLine())!= null && !line.contains("center"));
 
                     pattern = Pattern.compile(NAME_REGEX);
                     matcher = pattern.matcher(line);

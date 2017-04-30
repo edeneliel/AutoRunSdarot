@@ -15,7 +15,7 @@ import java.util.Set;
  * Created by Eden on 7/22/2016.
  */
 public class AutoSdarot implements Platform{
-    private final String DEFAULT_WATCH_URL="http://www.sdarot.pm/watch/";
+    private final String DEFAULT_WATCH_URL="http://www.zira.online/watch/";
     private final String CHROME_DRIVER = "webdriver.chrome.driver";
     private final String CHROME_DRIVER_PATH = "C://chromedriver.exe";
 
