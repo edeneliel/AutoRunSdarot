@@ -12,10 +12,10 @@ import java.util.regex.Pattern;
  * Created by Eden on 7/30/2016.
  */
 public class SearchUrlSdarot {
-    private final String DEFAULT_WATCH_URL = "https://www.sdarot.pm/search";
+    private final String DEFAULT_WATCH_URL = "http://www.zira.online/search";
     private final String USER_AGENT = "Mozilla/5.0";
     private final String ID_FROM_URL = ".*\\/watch\\/(.*?)-.*";
-    private final String SERIES_INFO_PATTERN = "<div class=\"title\"><h1>(.*) \\/ (.*) .*? .*?<\\/h1><\\/div>";
+    private final String SERIES_INFO_PATTERN = ".*<div class=\"title\"><h1>(.*) \\/ (.*) .*? .*?<\\/h1><\\/div>";
     private final String FIRST_INFO_PATTERN = "<a href=\"\\/watch\\/(.*?)-.*\">(.*)<\\/a>";
     private final String SECOND_INFO_PATTERN = "<h4>(.*)<\\/h4>";
 
@@ -43,9 +43,10 @@ public class SearchUrlSdarot {
             ps.close();
             hConnection.connect();
 
-            String newLocation = hConnection.getHeaderField("Location");
+            hConnection.getHeaderFields();
+            String newLocation = hConnection.getURL().toString();
 
-            if (newLocation == null) {
+            if (newLocation.equals(DEFAULT_WATCH_URL)) {
                 InputStream in = hConnection.getInputStream();
                 BufferedReader buff = new BufferedReader(new InputStreamReader(in));
                 String data;
