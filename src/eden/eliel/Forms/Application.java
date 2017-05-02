@@ -3,33 +3,47 @@ package eden.eliel.Forms;
 import eden.eliel.Api.JsonManager;
 import eden.eliel.Platforms.AutoAnimeTake;
 import eden.eliel.Platforms.AutoSdarot;
+import eden.eliel.Platforms.Platform;
 import eden.eliel.Search.SearchSeriesBox;
+import eden.eliel.Listeners.TCPListener;
 import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 
 /**
  * Created by Eden on 7/27/2016.
  */
 public class Application extends JFrame {
-    private JsonManager _jm;
-    private AutoSdarot _autoSdarot;
-    private AutoAnimeTake _autoAnimeTake;
-    private JPanel _details, _buttons;
-    private JLabel _seasonTag,_episodeTag;
-    private JButton _watchBtn,_addBtn,_removeBtn,_editMAL;
-    private JComboBox _comboBox;
+    private final String TITLE_NAME = "AutoSdarot";
+    private final String JSON_PATH = "config.json";
+
+    private JsonManager jsonManager;
+    private AutoSdarot autoSdarot;
+    private AutoAnimeTake autoAnimeTake;
+    private Platform currentPlatform;
+    private JPanel details;
+    private JPanel buttons;
+    private JLabel seasonTag;
+    private JLabel episodeTag;
+    private JButton watchBtn;
+    private JButton addBtn;
+    private JButton removeBtn;
+    private JButton editMalBtn;
+    private JComboBox combobox;
+    private TCPListener tcpListener;
 
     public Application(){
         setLayout(new BoxLayout(getContentPane(),BoxLayout.LINE_AXIS));
         getRootPane().setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 
-        _jm = new JsonManager("config.json");
-        _autoSdarot = new AutoSdarot(_jm);
-        _autoAnimeTake = new AutoAnimeTake(_jm);
+        jsonManager = new JsonManager(JSON_PATH);
+        autoSdarot = new AutoSdarot(jsonManager);
+        autoAnimeTake = new AutoAnimeTake(jsonManager);
+        setTCPListener();
 
-        setTitle("AutoSdarot");
+        setTitle(TITLE_NAME);
         setVisible(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -37,117 +51,117 @@ public class Application extends JFrame {
         setButtonsPanel();
         updateSeries();
 
-        _details.setAlignmentY(0f);
-        add(_details);
-        _buttons.setAlignmentY(0f);
-        add(_buttons);
+        details.setAlignmentY(0f);
+        add(details);
+        buttons.setAlignmentY(0f);
+        add(buttons);
 
         pack();
     }
 
     public JsonManager getJsonManager() {
-        return _jm;
+        return jsonManager;
     }
     public void addSeries(SearchSeriesBox seriesBox, String platform){
-        _jm.setKeyBySeries(seriesBox.getEngName(),"Id",seriesBox.getId());
-        _jm.setKeyBySeries(seriesBox.getEngName(),"Platform",platform);
+        jsonManager.setKeyBySeries(seriesBox.getEngName(),"Id",seriesBox.getId());
+        jsonManager.setKeyBySeries(seriesBox.getEngName(),"Platform",platform);
     }
     public void setMalId(String Series,String MalId){
-        _jm.setKeyBySeries(Series,"MAL",MalId);
+        jsonManager.setKeyBySeries(Series,"MAL",MalId);
     }
     public void updateSeries(){
-        _comboBox.setModel(new DefaultComboBoxModel(_jm.getSeriesNames().toArray()));
-        _comboBox.setSelectedIndex(0);
+        combobox.setModel(new DefaultComboBoxModel(jsonManager.getSeriesNames().toArray()));
+        combobox.setSelectedIndex(0);
 
-        _seasonTag.setText("Season: " + _autoSdarot.getKeyBySeries(_comboBox.getSelectedItem().toString(), "Season"));
-        _episodeTag.setText("Episode: " + _autoSdarot.getKeyBySeries(_comboBox.getSelectedItem().toString(), "Episode"));
-        if (_jm.getPlatformOfSeries(_comboBox.getSelectedItem().toString()).equals("animetake")) {
-            _seasonTag.setText("MAL: " + _autoSdarot.getKeyBySeries(_comboBox.getSelectedItem().toString(), "MAL"));
-            _editMAL.setVisible(true);
+        seasonTag.setText("Season: " + autoSdarot.getKeyBySeries(combobox.getSelectedItem().toString(), "Season"));
+        episodeTag.setText("Episode: " + autoSdarot.getKeyBySeries(combobox.getSelectedItem().toString(), "Episode"));
+        if (jsonManager.getPlatformOfSeries(combobox.getSelectedItem().toString()).equals("animetake")) {
+            seasonTag.setText("MAL: " + autoSdarot.getKeyBySeries(combobox.getSelectedItem().toString(), "MAL"));
+            editMalBtn.setVisible(true);
         }
         pack();
     }
 
     private void setComboBox(){
-        _comboBox = new JComboBox(_jm.getSeriesNames().toArray());
-        _comboBox.addActionListener(e -> {
-            _editMAL.setVisible(false);
-            _editMAL.setVisible(false);
-            _seasonTag.setText("Season: " + _autoSdarot.getKeyBySeries(_comboBox.getSelectedItem().toString(), "Season"));
-            _episodeTag.setText("Episode: " + _autoSdarot.getKeyBySeries(_comboBox.getSelectedItem().toString(), "Episode"));
-            if (_jm.getPlatformOfSeries(_comboBox.getSelectedItem().toString()).equals("animetake")) {
-                _seasonTag.setText("MAL: " + _autoSdarot.getKeyBySeries(_comboBox.getSelectedItem().toString(), "MAL"));
-                _editMAL.setVisible(true);
+        combobox = new JComboBox(jsonManager.getSeriesNames().toArray());
+        combobox.addActionListener(e -> {
+            editMalBtn.setVisible(false);
+            editMalBtn.setVisible(false);
+            seasonTag.setText("Season: " + autoSdarot.getKeyBySeries(combobox.getSelectedItem().toString(), "Season"));
+            episodeTag.setText("Episode: " + autoSdarot.getKeyBySeries(combobox.getSelectedItem().toString(), "Episode"));
+            if (jsonManager.getPlatformOfSeries(combobox.getSelectedItem().toString()).equals("animetake")) {
+                seasonTag.setText("MAL: " + autoSdarot.getKeyBySeries(combobox.getSelectedItem().toString(), "MAL"));
+                editMalBtn.setVisible(true);
             }
             pack();
         });
-        AutoCompleteDecorator.decorate(_comboBox);
+        AutoCompleteDecorator.decorate(combobox);
     }
     private void setWatchBtn(){
-        _watchBtn = new JButton("Watch");
-        _watchBtn.addActionListener(e -> {
+        watchBtn = new JButton("Watch");
+        watchBtn.addActionListener(e -> {
             try {
-                switch (_jm.getPlatformOfSeries(_comboBox.getSelectedItem().toString())){
+                switch (jsonManager.getPlatformOfSeries(combobox.getSelectedItem().toString())){
                     case("sdarot"):
-                        _autoSdarot.execute(_comboBox.getSelectedItem().toString());
+                        currentPlatform = autoSdarot;
                         break;
                     case("animetake"):
-                        _autoAnimeTake.execute(_comboBox.getSelectedItem().toString());
+                        currentPlatform = autoAnimeTake;
                         break;
                 }
-
+                currentPlatform.execute(combobox.getSelectedItem().toString());
             } catch (InterruptedException e1) {
                 e1.printStackTrace();
             }
         });
     }
     private void setMalBtn(){
-        _editMAL = new JButton("Edit MAL");
-        _editMAL.addActionListener(e -> {
-            MalEditFrame malEditFrame = new MalEditFrame(this,_comboBox.getSelectedItem().toString());
+        editMalBtn = new JButton("Edit MAL");
+        editMalBtn.addActionListener(e -> {
+            MalEditFrame malEditFrame = new MalEditFrame(this, combobox.getSelectedItem().toString());
             malEditFrame.setVisible(true);
         });
     }
     private void setAddBtn(){
-        _addBtn = new JButton("Add Series");
-        _addBtn.addActionListener(e -> {
+        addBtn = new JButton("Add Series");
+        addBtn.addActionListener(e -> {
             AddSeriesFrame addSeriesFrame = new AddSeriesFrame(this);
             addSeriesFrame.setVisible(true);
         });
     }
     private void setRemoveBtn(){
-        _removeBtn = new JButton("Remove Series");
-        _removeBtn.addActionListener(e -> {
+        removeBtn = new JButton("Remove Series");
+        removeBtn.addActionListener(e -> {
             int selectedOption = JOptionPane.showConfirmDialog(null,
-                    "Are you sure you want to remove \"" + _comboBox.getSelectedItem().toString() + "\"?",
+                    "Are you sure you want to remove \"" + combobox.getSelectedItem().toString() + "\"?",
                     "Conformation",
                     JOptionPane.YES_NO_OPTION);
             if (selectedOption == JOptionPane.YES_OPTION) {
-                _autoSdarot.removeSeries(_comboBox.getSelectedItem().toString());
+                removeSeries(combobox.getSelectedItem().toString());
                 updateSeries();
             }
         });
     }
     private void setDetailsPanel(){
-        _details = new JPanel();
-        _details.setLayout(new BoxLayout(_details,BoxLayout.PAGE_AXIS));
+        details = new JPanel();
+        details.setLayout(new BoxLayout(details,BoxLayout.PAGE_AXIS));
         setComboBox();
-        _seasonTag = new JLabel();
-        _episodeTag = new JLabel();
+        seasonTag = new JLabel();
+        episodeTag = new JLabel();
 
         // ComBox has a promblem with alignment.
-        _comboBox.setAlignmentX(Component.LEFT_ALIGNMENT);
-        _details.add(_comboBox);
-        _details.add(Box.createRigidArea(new Dimension(0,80)));
-        _details.add(_seasonTag);
-        _details.add(_episodeTag);
+        combobox.setAlignmentX(Component.LEFT_ALIGNMENT);
+        details.add(combobox);
+        details.add(Box.createRigidArea(new Dimension(0,80)));
+        details.add(seasonTag);
+        details.add(episodeTag);
     }
     private void setButtonsPanel() {
-        _buttons = new JPanel();
-        _buttons.setLayout(new BoxLayout(_buttons,BoxLayout.PAGE_AXIS));
-        _buttons.setAlignmentX(RIGHT_ALIGNMENT);
+        buttons = new JPanel();
+        buttons.setLayout(new BoxLayout(buttons,BoxLayout.PAGE_AXIS));
+        buttons.setAlignmentX(RIGHT_ALIGNMENT);
 
-        _buttons.setBorder(BorderFactory.createEmptyBorder(0,10,0,0));
+        buttons.setBorder(BorderFactory.createEmptyBorder(0,10,0,0));
 
         setWatchBtn();
         setAddBtn();
@@ -155,16 +169,60 @@ public class Application extends JFrame {
         setMalBtn();
 
 
-        _watchBtn.setAlignmentX(Component.RIGHT_ALIGNMENT);
-        _buttons.add(_watchBtn);
-        _buttons.add(Box.createRigidArea(new Dimension(0,10)));
-        _addBtn.setAlignmentX(Component.RIGHT_ALIGNMENT);
-        _buttons.add(_addBtn);
-        _buttons.add(Box.createRigidArea(new Dimension(0,10)));
-        _removeBtn.setAlignmentX(Component.RIGHT_ALIGNMENT);
-        _buttons.add(_removeBtn);
-        _buttons.add(Box.createRigidArea(new Dimension(0,10)));
-        _editMAL.setAlignmentX(Component.RIGHT_ALIGNMENT);
-        _buttons.add(_editMAL);
+        watchBtn.setAlignmentX(Component.RIGHT_ALIGNMENT);
+        buttons.add(watchBtn);
+        buttons.add(Box.createRigidArea(new Dimension(0,10)));
+        addBtn.setAlignmentX(Component.RIGHT_ALIGNMENT);
+        buttons.add(addBtn);
+        buttons.add(Box.createRigidArea(new Dimension(0,10)));
+        removeBtn.setAlignmentX(Component.RIGHT_ALIGNMENT);
+        buttons.add(removeBtn);
+        buttons.add(Box.createRigidArea(new Dimension(0,10)));
+        editMalBtn.setAlignmentX(Component.RIGHT_ALIGNMENT);
+        buttons.add(editMalBtn);
+    }
+    private void setTCPListener() {
+        tcpListener = new TCPListener(1000){
+            @Override
+            public double onRequest(String str) {
+                if (currentPlatform == null || !currentPlatform.isPlaying())
+                    return 0;
+                switch (str) {
+                    case ("current-time"):
+                        return currentPlatform.getTime();
+                    case ("duration"):
+                        return currentPlatform.getDuration();
+                    case ("pause"):
+                        currentPlatform.pauseVideoRequest();
+                        break;
+                    case ("next"):
+                        currentPlatform.nextVideoRequest();
+                        break;
+                    case ("previous"):
+                        currentPlatform.prevVideoRequest();
+                        break;
+                    case ("play"):
+                        currentPlatform.playVideoRequest();
+                        break;
+                    case ("shutdown-pc"):
+                        Runtime runtime = Runtime.getRuntime();
+                        try {
+                            Process proc = runtime.exec("shutdown -s -t 0");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        System.exit(0);
+                        break;
+                }
+                if (str.startsWith("progress: ")) {
+                    currentPlatform.setCurrentTime(Integer.parseInt(str.replace("progress: ","")));
+                }
+                return 0;
+            }
+        };
+        tcpListener.start();
+    }
+    private boolean removeSeries(String series) {
+        return jsonManager.removeSeries(series);
     }
 }

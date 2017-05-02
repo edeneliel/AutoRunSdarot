@@ -17,11 +17,11 @@ import java.util.regex.Pattern;
  */
 public class SearchAnimeTake {
     private final String USER_AGENT = "Mozilla/5.0";
-    private final String BASE_URL = "http://animetake.tv/anime-search/";
-    private final String BASE_ANIME_URL = "http://animetake.tv/anime/";
+    private final String BASE_URL = "https://animetake.tv/search/?key=";
+    private final String BASE_ANIME_URL = "https://animetake.tv/anime/";
     private final String HREF_REGEX = "href=\"/anime/(.*)?/\"";
     private final String NAME_REGEX = "<center>(.*)?</center>";
-    private final String WATCH_REGEX = "<a href=\"/watch/(.*)-.*/\"/>";
+    private final String WATCH_REGEX = "<a href=\"/watch/(.*)-episode.*/\".*>";
 
     public ArrayList<SearchSeriesBox> SearchSeries(String input){
         Pattern pattern;
@@ -29,7 +29,7 @@ public class SearchAnimeTake {
         String line;
         ArrayList<SearchSeriesBox> result = new ArrayList<>();
         try {
-            URL url = new URL(BASE_URL+input.replaceAll(" ","+")+"/");
+            URL url = new URL(BASE_URL+input.replaceAll(" ","+"));
             HttpURLConnection httpConnect = setUrlConnection(url);
             httpConnect.connect();
             InputStream in = httpConnect.getInputStream();
@@ -41,8 +41,7 @@ public class SearchAnimeTake {
                     matcher = pattern.matcher(line);
                     matcher.find();
                     String id = matcher.group(1);
-                    buff.readLine();
-                    line = buff.readLine();
+                    while ((line = buff.readLine())!= null && !line.contains("center"));
 
                     pattern = Pattern.compile(NAME_REGEX);
                     matcher = pattern.matcher(line);
@@ -72,6 +71,7 @@ public class SearchAnimeTake {
             BufferedReader buff = new BufferedReader(new InputStreamReader(in));
 
             while (!(line = buff.readLine()).contains("/watch/"));
+            System.out.println(line);
             pattern = Pattern.compile(WATCH_REGEX);
             matcher = pattern.matcher(line);
             matcher.find();

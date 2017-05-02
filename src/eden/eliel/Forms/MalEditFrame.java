@@ -1,7 +1,5 @@
 package eden.eliel.Forms;
 
-import eden.eliel.Forms.Application;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
@@ -11,18 +9,18 @@ import java.awt.event.WindowEvent;
  * Created by Eden on 10/24/2016.
  */
 public class MalEditFrame extends JFrame {
-    private Application _application;
-    private JTextField _input;
-    private JButton _submitBtn;
-    private String _currentSeries;
+    private Application application;
+    private JTextField input;
+    private JButton submitBtn;
+    private String currentSeries;
 
     public MalEditFrame(Application app, String currentSeries) {
-        _application = app;
-        _currentSeries = currentSeries;
+        application = app;
+        this.currentSeries = currentSeries;
 
         addWindowListener(new WindowAdapter(){
             public void windowClosing(WindowEvent e) {
-                _application.updateSeries();
+                application.updateSeries();
             }
         });
 
@@ -30,20 +28,20 @@ public class MalEditFrame extends JFrame {
 
         getRootPane().setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 
-        _input = new JTextField();
-        _input.setAlignmentX(Component.CENTER_ALIGNMENT);
-        add(_input);
+        input = new JTextField();
+        input.setAlignmentX(Component.CENTER_ALIGNMENT);
+        add(input);
 
-        _submitBtn = new JButton("Submit");
-        getRootPane().setDefaultButton(_submitBtn);
-        _submitBtn.addActionListener(e -> {
-            _application.setMalId(_currentSeries, _input.getText());
+        submitBtn = new JButton("Submit");
+        getRootPane().setDefaultButton(submitBtn);
+        submitBtn.addActionListener(e -> {
+            application.setMalId(this.currentSeries, input.getText());
             dispose();
-            _application.updateSeries();
+            application.updateSeries();
         });
-        _submitBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        submitBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        add(_submitBtn);
+        add(submitBtn);
 
         pack();
     }

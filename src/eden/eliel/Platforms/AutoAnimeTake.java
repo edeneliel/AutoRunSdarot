@@ -8,83 +8,176 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Eden on 10/4/2016.
  */
-public class AutoAnimeTake {
-    private final String DEFAULT_WATCH_URL="https://animetake.tv";
+public class AutoAnimeTake implements Platform{
+    private final String DEFAULT_WATCH_URL = "https://animetake.tv";
+    private final String CHROME_DRIVER = "webdriver.chrome.driver";
+    private final String CHROME_DRIVER_PATH = "C://chromedriver.exe";
 
-    private WebDriver _webDriver;
-    private JavascriptExecutor _js;
-    private JsonManager _jm;
-    private String _seriesId;
-    private String _seriesWatchId;
-    private String _malSeriesId;
-    private String _currentEpisode;
+    private WebDriver webDriver;
+    private JavascriptExecutor javascriptExecutor;
+    private JsonManager jsonManager;
+    private String seriesId;
+    private String seriesWatchId;
+    private String malSeriesId;
+    private String currentEpisode;
 
     public AutoAnimeTake(JsonManager jsonManager){
-        _jm = jsonManager;
+        this.jsonManager = jsonManager;
 
-        System.setProperty("webdriver.chrome.driver", "C://chromedriver.exe");
+        System.setProperty(CHROME_DRIVER, CHROME_DRIVER_PATH);
     }
 
+    @Override
     public void execute(String seriesName) throws InterruptedException {
-        _webDriver = new ChromeDriver();
-        _js = (JavascriptExecutor) _webDriver;
-        _webDriver.manage().window().maximize();
+        boolean alreadyFinished = false;
+        webDriver = new ChromeDriver();
+        javascriptExecutor = (JavascriptExecutor) webDriver;
+        webDriver.manage().window().maximize();
 
         setSeries(seriesName);
 
-        if (_seriesId == null) {
-            _webDriver.close();
+        if (seriesId == null) {
+            webDriver.close();
             return;
         }
-        ArrayList<String> AllEpisodes = getEpisodes();
+        ArrayList<String> allEpisodes = getEpisodes();
 
-        for (int i = AllEpisodes.indexOf(_currentEpisode); i<AllEpisodes.size(); i++){
-            _webDriver.get(DEFAULT_WATCH_URL + "/watch/" + _seriesWatchId + "-episode-" + AllEpisodes.get(i));
+        alreadyFinished = isAlreadyFinished(seriesName,allEpisodes);
+        if (alreadyFinished){
+            currentEpisode = allEpisodes.get(allEpisodes.indexOf(currentEpisode) + 1);
+        }
+        try {
+            startWatchingSeries(seriesName, allEpisodes);
+        }
+        catch (Exception e) {
+            webDriver.quit();
+        }
+
+        webDriver.quit();
+    }
+    @Override
+    public void pauseVideoRequest() {
+        javascriptExecutor.executeScript("$('#olvideo_html5_api')[0].pause()");
+    }
+    @Override
+    public void playVideoRequest() {
+        javascriptExecutor.executeScript("$('#olvideo_html5_api')[0].play()");
+    }
+    @Override
+    public void nextVideoRequest() {
+
+    }
+    @Override
+    public void prevVideoRequest() {
+
+    }
+    @Override
+    public void setCurrentTime(int timePercent) {
+
+    }
+    @Override
+    public double getTime() {
+        return 0;
+    }
+    @Override
+    public double getDuration() {
+        return 0;
+    }
+    @Override
+    public boolean isPlaying() {
+        return false;
+    }
+
+    private void startWatchingSeries(String seriesName,ArrayList<String> allEpisodes) throws InterruptedException {
+        for (int i = allEpisodes.indexOf(currentEpisode); i<allEpisodes.size(); i++){
+            ArrayList <String> myAnimeListApiParams = new ArrayList<>();
+            jsonManager.setKeyBySeries(seriesName,"FinishedEpisode","false");
+            updateJson(seriesName,allEpisodes.get(i));
+            webDriver.get(DEFAULT_WATCH_URL + "/watch/" + seriesWatchId + "-episode-" + allEpisodes.get(i));
             playVideo();
 
-            while (!_js.executeScript("return player.ended()").toString().equals("true"))
-                Thread.sleep(2000);
-
-            updateJson(seriesName,AllEpisodes.get(i+1));
-            MyAnimeListApi.updateMalSeries(_malSeriesId,"episode="+AllEpisodes.get(i));
+            if (allEpisodes.get(i).contains("final"))
+                myAnimeListApiParams.add("status=2");
+            myAnimeListApiParams.add("episode="+allEpisodes.get(i));
+            if (malSeriesId != null)
+                MyAnimeListApi.updateMalSeries(malSeriesId, myAnimeListApiParams.toArray(new String[myAnimeListApiParams.size()]));
+            jsonManager.setKeyBySeries(seriesName,"FinishedEpisode","true");
+            if (!(i+1 >= allEpisodes.size()))
+                updateJson(seriesName,allEpisodes.get(i+1));
         }
-        _webDriver.close();
-    }
 
-    private void playVideo(){
-        _js.executeScript("player.play()");
-        _js.executeScript("document.getElementById('video').setAttribute('style', 'height: 1080px!important; width: 1920px!important')");
-        _js.executeScript("scroll(1000,500)");
+    }
+    private boolean isAlreadyFinished(String seriesName, ArrayList<String> allEpisodes){
+        if (jsonManager.getKeyBySeries(seriesName,"FinishedEpisode") != null &&
+                jsonManager.getKeyBySeries(seriesName,"FinishedEpisode").equals("true") &&
+                allEpisodes.indexOf(currentEpisode) != allEpisodes.size()-1) {
+            return true;
+        }
+        return false;
+    }
+    private void playVideo() throws InterruptedException {
+        List<WebElement> openloadButton = webDriver.findElements(By.id("openload_button"));
+
+        removeAds();
+        if (openloadButton.size() > 0)
+            openloadButton.get(0).click();
+
+        int iframe_count = webDriver.findElements(By.tagName("iframe")).size();
+
+        if (iframe_count > 4){
+            webDriver.get(webDriver.findElement(By.tagName("iframe")).getAttribute("src"));
+            String streamurl = javascriptExecutor.executeScript("return $('#streamurl')[0].innerHTML").toString();
+            javascriptExecutor.executeScript("document.getElementById('olvideo_html5_api').setAttribute('src','/stream/" + streamurl + "?mime=true')");
+            javascriptExecutor.executeScript("$('#olvideo_html5_api')[0].play()");
+            while (!javascriptExecutor.executeScript("return $('#olvideo_html5_api')[0].ended").toString().equals("true"))
+                Thread.sleep(2000);
+        }
+        else {
+            javascriptExecutor.executeScript("document.getElementsByClassName('embed-responsive embed-responsive-16by9')[0].setAttribute('style', 'height: 1020px!important; width: 1910px!important')");
+            javascriptExecutor.executeScript("scroll(1000,430)");
+            while (!javascriptExecutor.executeScript("return document.getElementsByTagName('video')[0].ended").toString().equals("true"))
+                Thread.sleep(2000);
+        }
+    }
+    private void removeAds() {
+        webDriver.findElement(By.className("page_title")).click();
+        Set<String> windows = webDriver.getWindowHandles();
+        if (windows.size() > 1) {
+            Iterator<String> it = windows.iterator();
+            String parent = it.next();
+            String newwin = it.next();
+            webDriver.switchTo().window(newwin);
+            webDriver.close();
+            webDriver.switchTo().window(parent);
+        }
     }
     private void setSeries(String seriesName){
-        _seriesId = _jm.getKeyBySeries(seriesName,"Id");
-        _seriesWatchId = _jm.getKeyBySeries(seriesName,"WatchId");
-        _malSeriesId = _jm.getKeyBySeries(seriesName,"MAL");
-        _currentEpisode = _jm.getKeyBySeries(seriesName,"Episode");
-        if (_seriesWatchId == null){
-            _seriesWatchId = _seriesId;
+        seriesId = jsonManager.getKeyBySeries(seriesName,"Id");
+        seriesWatchId = jsonManager.getKeyBySeries(seriesName,"WatchId");
+        malSeriesId = jsonManager.getKeyBySeries(seriesName,"MAL");
+        currentEpisode = jsonManager.getKeyBySeries(seriesName,"Episode");
+        if (seriesWatchId == null){
+            seriesWatchId = seriesId;
         }
     }
     private ArrayList<String> getEpisodes(){
         ArrayList episodes = new ArrayList<String>();
-        _webDriver.get(DEFAULT_WATCH_URL + "/anime/" + _seriesId);
-        List<WebElement> episodesElements = _webDriver.findElements(By.xpath("(//body//*[@class='no-bullet'])[1]/*"));
+        webDriver.get(DEFAULT_WATCH_URL + "/anime/" + seriesId);
+        List<WebElement> episodesElements = webDriver.findElements(By.xpath("(//body//*[@class='list-group-item animeinfo-content'])"));
         for (WebElement episodeElement : episodesElements){
             String href = episodeElement.getAttribute("href");
-            href = href.substring(href.lastIndexOf("-")+1,href.length()-1);
+            href = href.substring(href.lastIndexOf("episode-")+"episode-".length(),href.length()-1);
             episodes.add(href);
         }
         Collections.reverse(episodes);
         return episodes;
     }
     private void updateJson(String seriesName, String episode){
-        _jm.setKeyBySeries(seriesName,"Episode", episode);
+        jsonManager.setKeyBySeries(seriesName,"Episode", episode);
     }
 }
