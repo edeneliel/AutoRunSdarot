@@ -1,10 +1,7 @@
 package eden.eliel.Platforms;
 
 import eden.eliel.Api.JsonManager;
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 
 import java.util.ArrayList;
@@ -21,6 +18,7 @@ public class AutoSdarot implements Platform{
 
     private WebDriver webDriver;
     private JavascriptExecutor javascriptExecutor;
+    private Iterator<String> windows;
     private JsonManager jsonManager;
     private String seriesName;
     private String seriesId;
@@ -58,14 +56,31 @@ public class AutoSdarot implements Platform{
             updateJson(seriesName, currentSeason, currentEpisode);
             maxEpisode = getEpisodesLength();
             for (; currentEpisode <= maxEpisode; currentEpisode++) {
-                webDriver.get(DEFAULT_WATCH_URL + seriesId + "/season/" + currentSeason + "/episode/" + currentEpisode);
+                if(webDriver.getWindowHandles().size() > 1) {
+                    webDriver.close();
+                    windows = webDriver.getWindowHandles().iterator();
+                    webDriver.switchTo().window(windows.next());
+                }
+                else
+                    webDriver.get(DEFAULT_WATCH_URL + seriesId + "/season/" + currentSeason + "/episode/" + currentEpisode);
 
                 try {
                     clickAfterWait();
 
+                    boolean runNext = false;
                     playing = true;
-                    while (!javascriptExecutor.executeScript("return jwplayer().getState()").equals("complete") && episodesController == 0)
+                    while (!javascriptExecutor.executeScript("return jwplayer().getState()").equals("complete") && episodesController == 0) {
+                        if (!runNext && Double.parseDouble(javascriptExecutor.executeScript("return jwplayer().getPosition()").toString())+30 > Double.parseDouble(javascriptExecutor.executeScript("return jwplayer().getDuration()").toString())){
+                            runNext = true;
+                            if (currentEpisode+1 > maxEpisode)
+                                javascriptExecutor.executeScript("window.open(\"" + DEFAULT_WATCH_URL + seriesId + "/season/" + (currentSeason + 1) + "/episode/1\")");
+                            else
+                                javascriptExecutor.executeScript("window.open(\"" + DEFAULT_WATCH_URL + seriesId + "/season/" + currentSeason + "/episode/" + (currentEpisode + 1) + "\")");
+                            windows = webDriver.getWindowHandles().iterator();
+                            webDriver.switchTo().window(windows.next());
+                        }
                         Thread.sleep(2000);
+                    }
                     playing = false;
 
                     if (episodesController != 0) {
@@ -75,6 +90,7 @@ public class AutoSdarot implements Platform{
                     updateJson(seriesName, currentSeason, currentEpisode + 1);
                 }
                 catch (Exception e){
+                    e.printStackTrace();
                     webDriver.quit();
                 }
             }
